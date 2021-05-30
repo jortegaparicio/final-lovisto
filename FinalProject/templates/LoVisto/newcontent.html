@@ -7,6 +7,7 @@
 <body>
 <p>This key does not exist in our database. You must introduce its values.</p>
 <form action="" method="POST">
+  {% csrf_token %}
   <p>title: <input type="text" name="title"></p>
   <p>link: <input type="text" name="link"></p>
   <p>description: <input type="text" name="description"></p>

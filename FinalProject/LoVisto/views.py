@@ -27,7 +27,6 @@ def index(request):
     # 4.- Renderizar
     return HttpResponse(template.render(context, request))
 
-@csrf_exempt
 def get_content(request, aportation):
 
     # POST
@@ -48,21 +47,26 @@ def get_content(request, aportation):
     try:
         # 1.- Obtenemos el contenido
         content = Content.objects.get(source=aportation)
+        comment_list = content.comentario_set
         # 2.- Cargar la plantilla
         template = loader.get_template('LoVisto/aportation.html')
         # 3.- Ligar las variables de la plantilla a las variables de python
         context = {
-            'content': content
-        }
-        response = template.render(context, request)
-    except Content.DoesNotExist:
-        # 2.- Cargar la plantilla
-        template = loader.get_template('LoVisto/newcontent.html')
-        # 3.- Ligar las variables de la plantilla a las variables de python
-        context = {
+            'content': content,
+            'comment_list' : comment_list
         }
         response = template.render(context, request)
 
+    except Content.DoesNotExist:
+        if request.user.is_authenticated:
+            # 2.- Cargar la plantilla
+            template = loader.get_template('LoVisto/newcontent.html')
+            # 3.- Ligar las variables de la plantilla a las variables de python
+            context = {
+            }
+            response = template.render(context, request)
+        else:
+            response = 'You are not authenticated. <a href="/login">Authentication here</a>'
     return HttpResponse(response)
 
 
@@ -77,9 +81,9 @@ def logedIn(request):
     if request.user.is_authenticated:
         response = "Logged in as \"" + request.user.username + '"'
     else:
-        response = 'You are not authenticated. <a href="/admin/">Authentication here</a>'
+        response = 'You are not authenticated. <a href="/login">Authentication here</a>'
     return HttpResponse(response)
 
 def logout_view(request):
     logout(request)
-    return redirect("/LoVisto/")
+    return redirect("/LoVisto")

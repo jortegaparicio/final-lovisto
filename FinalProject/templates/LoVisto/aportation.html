@@ -14,5 +14,14 @@
         <p class="vote">Positives: {{ content.positive }}. Negatives: {{ content.negative }}</p>
         {{ content.extended_info }}
     </div>
+    {% if comment_list %}
+        {% for comment in comment_list %}
+            <p>
+                <b>User</b>: {{ comment.user }}
+                <b>Body</b>: {{ comment.body }}
+                <b>Date</b>: {{ comment.date }}
+            </p>
+        {% endfor %}
+    {% endif %}
 </body>
 </html>

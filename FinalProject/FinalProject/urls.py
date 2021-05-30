@@ -15,8 +15,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
-
+from django.contrib.auth.views import LoginView as login
 urlpatterns = [
     path('LoVisto/', include('LoVisto.urls')),
+    path('login/', login.as_view()),
     path('admin/', admin.site.urls),
 ]

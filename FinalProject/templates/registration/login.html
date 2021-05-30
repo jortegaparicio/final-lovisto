@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login page</title>
+</head>
+<body>
+<form method="POST" action="/login/">
+  {% csrf_token %}
+  <table align="center">
+    <tr>
+      <td>Username:</td>
+      <td>{{ form.username }}</td>
+    </tr>
+    <tr>
+      <td>Password:</td>
+      <td>{{ form.password }}</td>
+    </tr>
+    <tr>
+       <td rowspan="2"><input type="submit" value="login!"/></td>
+    </tr>
+  </table>
+</form>
+</body>
+</html>
