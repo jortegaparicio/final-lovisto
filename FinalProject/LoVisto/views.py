@@ -1,15 +1,24 @@
 from django.http import HttpResponse
-from .models import Content
+from .models import Content, User
 from django.template import loader
 from operator import attrgetter
 from django.contrib.auth import logout
-from django.shortcuts import redirect
+from django.utils import timezone
 
 # Create your views here.
 NLASTOBJ = 10    # Number of the last objects that will be presented on the principal page
 
 
 def index(request):
+    if request.method == 'POST':
+        user = User.objects.get(user_name=request.user.username)
+        title = request.POST['title']
+        description = request.POST['description']
+        link = request.POST['link']
+        c = Content(title=title, link=link, description=description, user=user)
+        c.save()
+
+
     content_list = []
     # 1.- Lista de contenidos
     content = Content.objects.all()
@@ -17,10 +26,14 @@ def index(request):
     for i in sorted_list[:NLASTOBJ]:   # Ponemos en la respuesta los últimos objetos añadidos
         content_list.append(i)
     # 2.- Cargar la plantilla
-    template = loader.get_template('LoVisto/index.html')
+    if request.user.is_authenticated:
+        template = loader.get_template('LoVisto/index.html')
+    else:
+        template = loader.get_template('LoVisto/index_not.html')
+
     # 3.- Ligar las variables de la plantilla a las variables de python
     context = {
-        'content_list': content_list
+        'content_list': content_list,
     }
     # 4.- Renderizar
     return HttpResponse(template.render(context, request))
@@ -31,15 +44,11 @@ def get_content(request, content):
     # POST
     if request.method == 'POST':
         title = request.POST['title']
-        link = request.POST['link']
         description = request.POST['description']
-        positive = request.POST['positive']
-        negative = request.POST['negative']
-        date = request.POST['date']
-        num_comment = request.POST['num_comment']
-        extended_info = request.POST['extended_info']
-        c = Content(source=content, title=title, link=link, description=description, positive=positive,
-                    negative=negative, date=date, num_comment=num_comment, extended_info=extended_info)
+        link = request.POST['link']
+        c = Content(title=title, link=link, description=description,
+                    positive=0, negative=0, date=timezone.now, num_comment=0,
+                    extended_info="", user=request.user.username())
         c.save()
 
     # GET
@@ -82,9 +91,22 @@ def all_content(request):
     return HttpResponse(template.render(context, request))
 
 
+def information(request):
+    template = loader.get_template('LoVisto/information.html')
+    # 3.- Ligar las variables de la plantilla a las variables de python
+    context = {}
+    # Renderizar
+    return HttpResponse(template.render(context, request))
+
 def loged_in(request):
     if request.user.is_authenticated:
         response = "Logged in as \"" + request.user.username + '"'
+        # Guardamos el nuevo usuario en nuestra lista de usuarios
+        try:
+            User.objects.get(user_name=request.user.username)
+        except User.DoesNotExist:
+            user = User(user_name=request.user.username, password=request.user.password)
+            user.save()
     else:
         response = 'You are not authenticated. <a href="/login">Authentication here</a>'
     return HttpResponse(response)
@@ -92,4 +114,8 @@ def loged_in(request):
 
 def logout_view(request):
     logout(request)
-    return redirect("/LoVisto")
+    template = loader.get_template('LoVisto/logout.html')
+    # 3.- Ligar las variables de la plantilla a las variables de python
+    context = {}
+    # Renderizar
+    return HttpResponse(template.render(context, request))

@@ -5,8 +5,10 @@
     <title>All content</title>
 </head>
 <body>
-  {% for content in content_list %}
-    <p class="resumida"><a href="{{ content.source }}">{{ content.title }}</a></p>
-  {% endfor %}
+    {% if content_list %}
+      {% for content in content_list %}
+        <p class="resumida"><a href="/LoVisto/{{ content.source }}">{{ content.title }}</a></p>
+      {% endfor %}
+    {% endif %}
 </body>
 </html>
