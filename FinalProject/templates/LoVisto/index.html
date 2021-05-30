@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ content.title }}</title>
+</head>
+<body>
+    {% if content_list %}
+        {% for content in content_list%}
+            <div class="aportacion">
+                <h2>{{ content.title }}</h2>
+                <p class="description">{{ content.description }}</p>
+                <p class="data">Contribution from [usuario], send in {{ content.date }},
+                {{ content.num_comment }} comments,
+                    <a href="{{ content.link }}">more info</a></p>
+                <p class="vote">Positives: {{ content.positive }}. Negatives: {{ content.negative }}</p>
+                {{ content.extended_info }}
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>No content now</p>
+    {% endif %}
+</body>
+</html>
