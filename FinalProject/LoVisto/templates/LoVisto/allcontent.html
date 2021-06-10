@@ -2,44 +2,30 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Login page</title>
+    <title>All content</title>
 </head>
 <body>
-
-{% if form.errors %}
-<p>Your username and password didn't match. Please try again.</p>
-{% endif %}
-
-<form method="POST" action="/login/">
-  {% csrf_token %}
-  <table>
-
-    <tr>
-      <td>Username:</td>
-      <td>{{ form.username }}</td>
-    </tr>
-
-    <tr>
-      <td>Password:</td>
-      <td>{{ form.password }}</td>
-    </tr>
-
-    <tr>
-       <td rowspan="2"><input type="submit" value="login!"/></td>
-    </tr>
-
-  </table>
-</form>
+    {% if content_list %}
+        <h2>ALL CONTENT LIST:</h2>
+      {% for content in content_list %}
+        <ul>
+            <li>
+                <p class="resumida"><a href="/LoVisto/{{ content.id }}">{{ content.title }}</a></p>
+            </li>
+        </ul>
+      {% endfor %}
+    {% endif %}
     <h3>Menu:</h3>
     <p>
         <ul>
             <li><a href="/LoVisto/">Inicio</a> </li>
             <li><a href="/LoVisto/information">Información</a> </li>
-            <li><a href="/LoVisto/allcontent">Todo</a> </li>
             <li><a href="">Descarga como fichero XML</a> </li>
             <li><a href="">Descarga como fichero JSON</a> </li>
             {% if request.user.is_authenticated %}
                 <li><a href="/LoVisto/logout">Logout</a> </li>
+            {% else %}
+                <li><a href="/login">Login</a> </li>
             {% endif %}
         </ul>
     </p>

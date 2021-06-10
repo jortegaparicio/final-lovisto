@@ -2,34 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Login page</title>
+    <title>Not Authenticated</title>
 </head>
 <body>
-
-{% if form.errors %}
-<p>Your username and password didn't match. Please try again.</p>
-{% endif %}
-
-<form method="POST" action="/login/">
-  {% csrf_token %}
-  <table>
-
-    <tr>
-      <td>Username:</td>
-      <td>{{ form.username }}</td>
-    </tr>
-
-    <tr>
-      <td>Password:</td>
-      <td>{{ form.password }}</td>
-    </tr>
-
-    <tr>
-       <td rowspan="2"><input type="submit" value="login!"/></td>
-    </tr>
-
-  </table>
-</form>
+  You are not authenticated. <a href="/login">Authentication here</a>
     <h3>Menu:</h3>
     <p>
         <ul>
@@ -40,6 +16,8 @@
             <li><a href="">Descarga como fichero JSON</a> </li>
             {% if request.user.is_authenticated %}
                 <li><a href="/LoVisto/logout">Logout</a> </li>
+            {% else %}
+                <li><a href="/login">Login</a> </li>
             {% endif %}
         </ul>
     </p>

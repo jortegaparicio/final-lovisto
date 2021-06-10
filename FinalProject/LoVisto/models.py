@@ -11,6 +11,9 @@ class User(models.Model):
     password = models.CharField(max_length=128, default='')
 
 
+    def __str__(self):
+        return self.user_name
+
 class Content(models.Model):
     title = models.CharField(max_length=512, default='')
     link = models.CharField(max_length=1024, default='')
@@ -32,6 +35,9 @@ class Vote(models.Model):
     content = models.ForeignKey(Content, on_delete=models.CASCADE)
     vote = models.IntegerField(default=0)   # Si mayor que 0 entonces positivo, si menor que cero negativo else no se ha votado
 
+
+    def __str__(self):
+        return str(self.user) + ' : ' + str(self.vote)
 
 class Comment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, default=User)

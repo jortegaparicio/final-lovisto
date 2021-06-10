@@ -8,5 +8,5 @@ urlpatterns = [
     path('information', views.information),    # Pagina de información de la practica
     path('logout', views.logout_view),  # Nos sirve para hacer el logout de un usuario
     path('user', views.user_view),  # Pagina del usuario
-    path('<content>', views.get_content),   # Pagina de cada aportación
+    path('<int:content_id>', views.get_content),   # Pagina de cada aportación
 ]

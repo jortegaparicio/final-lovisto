@@ -12,17 +12,47 @@ NLASTAPORT = 5   # Number of the last aportations that will be presented on the 
 
 def index(request):
     if request.method == 'POST':
-        print('ppppppppppppaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaajjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj')
         if request.POST['votation'] == '1':
-            user = User.objects.get(user_name=request.user.username)
-            print("Content-id = " + str(request.POST['content_id']))
+            print('************************************************************************')
+            user = User.objects.get(id=request.user.id)
             content = Content.objects.get(id=request.POST['content_id'])
+            print(str(user))
+            print(str(content))
+            v = Vote.objects.filter(user=user, content=content).first()
+            print(str(v))
             if request.POST['vote'] == 'like':
-                v = Vote(user=user, content=content, vote=1)
+                if v is None :
+                    v = Vote(user=user, content=content, vote=1)
+                    content.positive += 1
+                    content.save()
+                    v.save()
+                    print("No hay ninún voto a este contenido")
+                else:
+                    if v.vote != 1:
+                        v.vote = 1
+                        content.positive += 1
+                        content.negative -= 1
+                        content.save()
+                        v.save()
+                    print("Ya hay algun vvoto de este contenido")
+                print('HAY QUE AÑADIR UN LIKE')
             else:
-                v = Vote(user=user, content=content, vote=-1)
-            v.save()
-            print('OJO QUE YA ESTAMOS VOTANDOOOOOOOO')
+                if v is None :
+                    v = Vote(user=user, content=content, vote=-1)
+                    content.negative += 1
+                    content.save()
+                    v.save()
+                    print("No hay ninún voto a este contenido")
+                else:
+                    if v.vote != -1:
+                        v.vote = -1
+                        content.negative += 1
+                        content.positive -= 1
+                        content.save()
+                        v.save()
+                    print("Ya hay algun voto de este contenido")
+                print('HAY QUE AÑADIR UN DISLIKE')
+            print('************************************************************************')
         else:
             user = User.objects.get(user_name=request.user.username)
             title = request.POST['title']
@@ -52,34 +82,75 @@ def index(request):
     for i in sorted_list[:NLASTOBJ]:   # Ponemos en la respuesta los últimos objetos añadidos
         content_list.append(i)
     # 2.- Cargar la plantilla
-    if request.user.is_authenticated:
-        template = loader.get_template('LoVisto/index.html')
-    else:
-        template = loader.get_template('LoVisto/index_not.html')
+    template = loader.get_template('LoVisto/index.html')
+
 
     # 3.- Ligar las variables de la plantilla a las variables de python
     context = {
         'content_list': content_list,
-        'content_user_list': content_user_list
+        'content_user_list': content_user_list,
+        'vote': None
     }
     # 4.- Renderizar
     return HttpResponse(template.render(context, request))
 
 
-def get_content(request, content):
+def get_content(request, content_id):
 
     # POST
     if request.method == 'POST':
-        user = User.objects.get(user_name=request.user.username)
-        content1 = Content.objects.get(title=content)
-        body = request.POST['body']
-        c = Comment(user=user, body=body, content=content1)
-        c.save()
+        if request.POST['votation'] == '1':
+            print('************************************************************************')
+            user = User.objects.get(id=request.user.id)
+            content = Content.objects.get(id=request.POST['content_id'])
+            print(str(user))
+            print(str(content))
+            v = Vote.objects.filter(user=user, content=content).first()
+            print(str(v))
+            print('Hay que votar')
+            if request.POST['vote'] == 'like':
+                if v is None :
+                    v = Vote(user=user, content=content, vote=1)
+                    content.positive += 1
+                    content.save()
+                    v.save()
+                    print("No hay ninún voto a este contenido")
+                else:
+                    if v.vote != 1:
+                        v.vote = 1
+                        content.positive += 1
+                        content.negative -= 1
+                        content.save()
+                        v.save()
+                    print("Ya hay algun vvoto de este contenido")
+                print('HAY QUE AÑADIR UN LIKE')
+            else:
+                if v is None :
+                    v = Vote(user=user, content=content, vote=-1)
+                    content.negative += 1
+                    content.save()
+                    v.save()
+                    print("No hay ninún voto a este contenido")
+                else:
+                    if v.vote != -1:
+                        v.vote = -1
+                        content.negative += 1
+                        content.positive -= 1
+                        content.save()
+                        v.save()
+        else:
+            user = User.objects.get(user_name=request.user.username)
+            content = Content.objects.get(id=content_id)
+            body = request.POST['body']
+            c = Comment(user=user, body=body, content=content)
+            content.num_comment += 1
+            content.save()
+            c.save()
 
     # GET
     try:
         # 1.- Obtenemos el contenido
-        content = Content.objects.get(title=content)
+        content = Content.objects.get(id=content_id)
         comment_list = content.comment_set.all()
         sorted_list = sorted(comment_list, key=attrgetter('date'), reverse=True)  # Ordenamos por fecha
 
@@ -121,7 +192,8 @@ def user_view(request):
             if i.user.id == request.user.id:
                 comment_user_list.append(i)
         print(comment_user_list)
-        # --> Lista de las últimas aportaciones del usuario
+
+        # Lista de las aportaciones del usuario
         content_list = []
         for i in content:   # Ponemos en la respuesta los últimos objetos añadidos
             print(str(i.user.id) + ' : ' + str(request.user.id))
@@ -130,12 +202,21 @@ def user_view(request):
             print(content_list)
         sorted_list = sorted(content_list, key=attrgetter('date'), reverse=True) # Ordenamos por fecha
 
+        # Lista de los votos del usuario
+        vote_list = user.vote_set.all()
+        vote_user_list = []
+        for i in vote_list:
+            if i.user.id == request.user.id:
+                vote_user_list.append(i)
+        print(vote_user_list)
+
         # 2.- Cargar la plantilla
         template = loader.get_template('LoVisto/user.html')
         # 3.- Ligar las variables de la plantilla a las variables de python
         context = {
             'content_list': sorted_list,
-            'comment_list': comment_list
+            'comment_list': comment_list,
+            'vote_list' : vote_user_list
         }
     else:
         template = loader.get_template('LoVisto/notAuthenticated.html')
@@ -168,16 +249,17 @@ def information(request):
 
 def loged_in(request):
     if request.user.is_authenticated:
-        response = "Logged in as \"" + request.user.username + '"'
         # Guardamos el nuevo usuario en nuestra lista de usuarios
         try:
             User.objects.get(user_name=request.user.username)
         except User.DoesNotExist:
             user = User(user_name=request.user.username, password=request.user.password)
             user.save()
+        template = loader.get_template('LoVisto/login.html')
+
     else:
-        response = 'You are not authenticated. <a href="/login">Authentication here</a>'
-    return HttpResponse(response)
+        template = loader.get_template('LoVisto/notAuthenticated.html')
+    return HttpResponse(template.render({}, request))
 
 
 def logout_view(request):
