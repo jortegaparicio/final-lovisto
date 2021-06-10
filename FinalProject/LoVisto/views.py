@@ -77,10 +77,14 @@ def index(request):
 
     # --> Lista de las ultimas aportaciones de todos los usuarios
     content_list = []
-    sorted_list = sorted(content, key=attrgetter('date'), reverse=True) # Ordenamos por fecha
+    sorted_list = sorted(content, key=attrgetter('id'), reverse=True) # Ordenamos por id
     print(sorted_list)
     for i in sorted_list[:NLASTOBJ]:   # Ponemos en la respuesta los últimos objetos añadidos
         content_list.append(i)
+    one = content_list[0]
+    two = content_list[1]
+    three = content_list[2]
+    print(str(one) + str(two) + str(three))
     # 2.- Cargar la plantilla
     template = loader.get_template('LoVisto/index.html')
 
@@ -89,7 +93,9 @@ def index(request):
     context = {
         'content_list': content_list,
         'content_user_list': content_user_list,
-        'vote': None
+        'one': one,
+        'two': two,
+        'three': three
     }
     # 4.- Renderizar
     return HttpResponse(template.render(context, request))
@@ -152,14 +158,23 @@ def get_content(request, content_id):
         # 1.- Obtenemos el contenido
         content = Content.objects.get(id=content_id)
         comment_list = content.comment_set.all()
-        sorted_list = sorted(comment_list, key=attrgetter('date'), reverse=True)  # Ordenamos por fecha
+        sorted_list = sorted(comment_list, key=attrgetter('id'), reverse=True)  # Ordenamos por id
 
         # 2.- Cargar la plantilla
         template = loader.get_template('LoVisto/content.html')
         # 3.- Ligar las variables de la plantilla a las variables de python
+        content2 = Content.objects.all()
+        sorted_list = sorted(content2, key=attrgetter('id'), reverse=True)  # Ordenamos por id
+        one = sorted_list[0]
+        two = sorted_list[1]
+        three = sorted_list[2]
+
         context = {
             'content': content,
-            'comment_list': sorted_list
+            'comment_list': sorted_list,
+            'one': one,
+            'two': two,
+            'three': three
         }
         response = template.render(context, request)
 
@@ -181,6 +196,10 @@ def user_view(request):
     if request.user.is_authenticated:
         # 1.- Lista de contenidos
         content = Content.objects.all()
+        sorted_list = sorted(content, key=attrgetter('id'), reverse=True)  # Ordenamos por id
+        one = sorted_list[0]
+        two = sorted_list[1]
+        three = sorted_list[2]
 
         # Lista de comentarios
         user = User.objects.get(id=request.user.id)
@@ -216,7 +235,10 @@ def user_view(request):
         context = {
             'content_list': sorted_list,
             'comment_list': comment_list,
-            'vote_list' : vote_user_list
+            'vote_list' : vote_user_list,
+            'one': one,
+            'two': two,
+            'three': three
         }
     else:
         template = loader.get_template('LoVisto/notAuthenticated.html')
@@ -228,22 +250,36 @@ def user_view(request):
 def all_content(request):
     # 1.- Obtenemos el contenido
     content_list = Content.objects.all()
-    sorted_list = sorted(content_list, key=attrgetter('date'), reverse=True) # Ordenamos por fecha
-
+    sorted_list = sorted(content_list, key=attrgetter('id'), reverse=True) # Ordenamos por id
+    one = sorted_list[0]
+    two = sorted_list[1]
+    three = sorted_list[2]
     # 2.- Cargar la plantilla
     template = loader.get_template('LoVisto/allcontent.html')
     # 3.- Ligar las variables de la plantilla a las variables de python
     context = {
         'content_list': sorted_list,
+        'one': one,
+        'two': two,
+        'three': three
     }
     # Renderizar
     return HttpResponse(template.render(context, request))
 
 
 def information(request):
+    content_list = Content.objects.all()
+    sorted_list = sorted(content_list, key=attrgetter('id'), reverse=True) # Ordenamos por id
+    one = sorted_list[0]
+    two = sorted_list[1]
+    three = sorted_list[2]
     template = loader.get_template('LoVisto/information.html')
     # 3.- Ligar las variables de la plantilla a las variables de python
-    context = {}
+    context = {
+        'one': one,
+        'two': two,
+        'three': three
+    }
     # Renderizar
     return HttpResponse(template.render(context, request))
 

@@ -6,11 +6,30 @@
 </head>
 <body>
 
-{% if form.errors %}
-<p>Your username and password didn't match. Please try again.</p>
-{% endif %}
+<div id="image">
+    {% load static %}
+    <img src="{% static "LoVisto/LoVistoLogo.png" %}" alt="Logo de LoVisto"
+    width="300" height="241">
+</div>
 
-<form method="POST" action="/login/">
+<div id="menu">
+        <h3>Menu:</h3>
+    <p>
+        <ul>
+            <li><a href="/LoVisto/">Inicio</a> </li>
+            <li><a href="/LoVisto/information">Información</a> </li>
+            <li><a href="/LoVisto/allcontent">Todo</a> </li>
+            <li><a href="">Descarga como fichero XML</a> </li>
+            <li><a href="">Descarga como fichero JSON</a> </li>
+            {% if request.user.is_authenticated %}
+                <li><a href="/LoVisto/logout">Logout</a> </li>
+            {% endif %}
+        </ul>
+    </p>
+</div>
+
+
+<form method="POST" action="">
   {% csrf_token %}
   <table>
 
@@ -30,18 +49,6 @@
 
   </table>
 </form>
-    <h3>Menu:</h3>
-    <p>
-        <ul>
-            <li><a href="/LoVisto/">Inicio</a> </li>
-            <li><a href="/LoVisto/information">Información</a> </li>
-            <li><a href="/LoVisto/allcontent">Todo</a> </li>
-            <li><a href="">Descarga como fichero XML</a> </li>
-            <li><a href="">Descarga como fichero JSON</a> </li>
-            {% if request.user.is_authenticated %}
-                <li><a href="/LoVisto/logout">Logout</a> </li>
-            {% endif %}
-        </ul>
-    </p>
+
 </body>
 </html>

@@ -5,25 +5,72 @@
     <title>Log out</title>
 </head>
 <body>
+
+<div id="login">
+<table align=right>
+    <tr>
+        <td>
+            {% if not request.user.is_authenticated %}
+                <a href="/login">Login</a>
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td >
+            {% if request.user.is_authenticated %}
+                <a href="logout">{{ request.user.username }} : {{ request.user.id }} -- Logout</a>
+            {% endif %}
+        </td>
+    </tr>
+</table>
+</div>
+
+<div id="image">
+    {% load static %}
+    <img src="{% static "LoVisto/LoVistoLogo.png" %}" alt="Logo de LoVisto"
+    width="300" height="241">
+</div>
+
+
+
+<div id="menu">
+        <h3>Menu:</h3>
+    <p>
+        <table>
+            <tr>
+                <td>
+                    <a href="/LoVisto/">Inicio</a>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <a href="/LoVisto/information">Información</a>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <a href="/LoVisto/allcontent">Todo</a>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <a href="">Descarga como fichero XML</a>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <a href="">Descarga como fichero JSON</a>
+                </td>
+            </tr>
+        </table>
+    </p>
+</div>
+
   {% block content %}
   <h2>Logged out!</h2>
 
   <a href="/login">Click here to login again.</a>
   {% endblock %}
-    <h3>Menu:</h3>
-    <p>
-        <ul>
-            <li><a href="/LoVisto/">Inicio</a> </li>
-            <li><a href="/LoVisto/information">Información</a> </li>
-            <li><a href="/LoVisto/allcontent">Todo</a> </li>
-            <li><a href="">Descarga como fichero XML</a> </li>
-            <li><a href="">Descarga como fichero JSON</a> </li>
-            {% if request.user.is_authenticated %}
-                <li><a href="/LoVisto/logout">Logout</a> </li>
-            {% else %}
-                <li><a href="/login">Login</a> </li>
-            {% endif %}
-        </ul>
-    </p>
+
 </body>
 </html>
