@@ -147,7 +147,21 @@ def processReddit(path):
     jsonStreamReddit = urllib.request.urlopen(url)
     reddit = Reddit(jsonStreamReddit)
     information = reddit.info()
+    url = information['url']
+    pattern = re.compile("https://i.redd.it/.+")
 
+    if pattern.match(url):
+        info = data.REDD_IMG.format(titulo=information['titulo'],
+                                    subreddit=information['subreddit'],
+                                    url=url,
+                                    aprobacion=information['aprobacion'])
+    else:
+        info = data.REDD_TEXT.format(titulo=information['titulo'],
+                                     subreddit=information['subreddit'],
+                                     texto=information['texto'],
+                                     url=url,
+                                     aprobacion=information['aprobacion'])
+    return info
 
 
 def knownResource(link):
@@ -180,7 +194,7 @@ def knownResource(link):
     if netloc == 'www.reddit.com' or netloc == 'reddit.com':
         pattern = re.compile("/r/.+/comments/.+/.+/")
         if pattern.match(path):
-            processReddit(path)
+            res = processReddit(path)
 
 
     return res
