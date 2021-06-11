@@ -8,6 +8,8 @@ import re
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 from .aemet_parser import Aemet
+from .YTparser import Youtube
+from .redditParser import Reddit
 from . import data
 
 # Create your views here.
@@ -120,9 +122,33 @@ def processAemetInfo(path):
     return info
 
 
-def procesYT(path):
-    video = path.split(sep='=')[-1]
-    url = ''
+def processYT(path):
+    video_id = path.split(sep='=')[-1]
+    url = 'https://www.youtube.com/oembed?format=json&url=https://www.youtube.com/watch?v=' + video_id
+
+    jsonStream = urllib.request.urlopen(url)
+    video = Youtube(jsonStream)
+    information = video.info()
+
+    info = data.VIDEO.format(titulo=information['titulo'],
+                             video=information['video'],
+                             nombre_autor=information['nombre_autor'],
+                             link_autor=information['link_autor'],
+                             url=video_id)
+    return info
+
+
+def processReddit(path):
+    print('PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPAAAAAAAAAAAAAAAAAAAAAAAAAAAAJJJJJJJJJJJJJJJJJJJJJJJJJJJJ' + path)
+    reddit_id = path.split(sep='/')[-3]
+    print('\n\n' + reddit_id + '\n\n')
+    url = 'https://www.reddit.com/r/django/comments/' + reddit_id + '/.json'
+    print(path)
+    jsonStreamReddit = urllib.request.urlopen(url)
+    reddit = Reddit(jsonStreamReddit)
+    information = reddit.info()
+
+
 
 def knownResource(link):
     res = None
@@ -148,6 +174,14 @@ def knownResource(link):
         if pattern.match(path):
             print('\n\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
             print(path)
+            print('PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPAAAAAAAAAAAAAAAAAAAAAAAAAAAAJJJJJJJJJJJJJJJJJJJJJJJJJJJJ' + path)
+            res = processYT(path)
+
+    if netloc == 'www.reddit.com' or netloc == 'reddit.com':
+        pattern = re.compile("/r/.+/comments/.+/.+/")
+        if pattern.match(path):
+            processReddit(path)
+
 
     return res
 
