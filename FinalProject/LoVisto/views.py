@@ -94,8 +94,8 @@ def knownResource2(link):
         print('No lo hemos podido reconocer')
     return res
 
-def processAemetInfo(o):
-    resource = o.path.split(sep='/')[-1]
+def processAemetInfo(path):
+    resource = path.split(sep='/')[-1]
     resource_id = resource.split(sep='-id')[-1]
     url = "https://www.aemet.es/xml/municipios/localidad_" + resource_id + ".xml"
 
@@ -120,21 +120,35 @@ def processAemetInfo(o):
     return info
 
 
-
+def procesYT(path):
+    video = path.split(sep='=')[-1]
+    url = ''
 
 def knownResource(link):
     res = None
     o = urlparse(link)
-    if o.netloc == 'www.aemet.es' or o.netloc == 'aemet.es':
+    netloc = o.netloc
+    path = o.path
+
+    if netloc == 'www.aemet.es' or netloc == 'aemet.es':
         pattern = re.compile("/es/eltiempo/prediccion/municipios/.+-id.+")
-        print(o.path)
+        print(path)
         # Si es un formato de recurso conocido
-        if pattern.match(o.path):
+        if pattern.match(path):
             print('\n\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
             print('Hemos reconocido el recurso')
-            res = processAemetInfo(o)
+            res = processAemetInfo(path)
         else:
             print('No hemos reconocido el recurso')
+
+    if netloc == 'www.youtube.com' or netloc == 'youtube.com':
+        path = link.split(sep='/')[-1]
+        pattern = re.compile("watch\?v=.+")
+
+        if pattern.match(path):
+            print('\n\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
+            print(path)
+
     return res
 
 
