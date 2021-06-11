@@ -1,11 +1,5 @@
 #!/usr/bin/python3
 
-# Simple XML parser for Aemet XML predictions
-# César Borao Moratinos. 2021
-# Based on "Youtube XML parser": Jesus M. Gonzalez-Barahona
-# SAT subject (Universidad Rey Juan Carlos)
-#
-
 from xml.sax.handler import ContentHandler
 from xml.sax import make_parser
 
