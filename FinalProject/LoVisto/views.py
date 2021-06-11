@@ -1,65 +1,161 @@
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse
 from .models import Content, User, Comment, Vote
 from django.template import loader
 from operator import attrgetter
 from django.contrib.auth import logout
-from django.utils import timezone
+import urllib.request
+import re
+from bs4 import BeautifulSoup
+from urllib.parse import urlparse
 
 # Create your views here.
 NLASTOBJ = 10    # Number of the last objects that will be presented on the principal page
 NLASTAPORT = 5   # Number of the last aportations that will be presented on the principal page
 
 
+
+
+def votation(request):
+    user = User.objects.get(id=request.user.id)
+    content = Content.objects.get(id=request.POST['content_id'])
+    v = Vote.objects.filter(user=user, content=content).first()
+    if request.POST['vote'] == 'like':
+        if v is None:
+            v = Vote(user=user, content=content, vote=1)
+            content.positive += 1
+            content.save()
+            v.save()
+        else:
+            if v.vote != 1:
+                v.vote = 1
+                content.positive += 1
+                content.negative -= 1
+                content.save()
+                v.save()
+    else:
+        if v is None:
+            v = Vote(user=user, content=content, vote=-1)
+            content.negative += 1
+            content.save()
+            v.save()
+        else:
+            if v.vote != -1:
+                v.vote = -1
+                content.negative += 1
+                content.positive -= 1
+                content.save()
+                v.save()
+
+def unknownResource(link):
+    try:
+        res = None
+
+        htmlStream = urllib.request.urlopen(link)
+        soup = BeautifulSoup(htmlStream, 'html.parser')
+        ogTitle = soup.find('meta', property='og:title')
+        if ogTitle:
+            ogImage = soup.find('meta', property='og:image')
+            if ogImage:
+                res = '<div class="og"> <p>' + str(ogTitle['content']) + '</p> <img src="' + str(ogImage['content']) + '"></div>'
+            else:
+                title = soup.title.string
+                if title is not None:
+                    res = '<div class="html"><p>' + str(title) + '</p></div>'
+                else:
+                    res = '<div class html="html"><p>Información extendida no disponible</p></div>'
+        else:
+            title = soup.title.string
+            if title is not None:
+                res = '<div class="html"><p>' + str(title) + '</p></div>'
+            else:
+                res = '<div class html="html"><p>Información extendida no disponible</p></div>'
+    except:
+        res = '<div class html="html"><p>Información extendida no disponible</p></div>'
+
+    return res
+
+def knownResource2(link):
+    res = None
+    o = urlparse(link)
+    print('PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP')
+    if o.netloc == 'www.aemet.es' or o.netloc == 'aemet.es':
+        resource = o.path.split(sep='/')[-1]
+        municipio = resource.split(sep='-id')[0]
+        id = resource.split(sep='-id')[-1]
+        print('Municipio = ' + municipio + '  ID = ' + str(id))
+        if o.path == '/es/eltiempo/prediccion/municipios/' + str(municipio) + '-id' + str(id):
+            print('Lo Estamos reconociendo')
+
+        else:
+            print('No lo hemos podido reconocer')
+    else:
+        print('No lo hemos podido reconocer')
+    return res
+
+def processAemetInfo(o):
+    resource = o.path.split(sep='/')[-1]
+    municipio = resource.split(sep='-id')[0]
+    resource_id = resource.split(sep='-id')[-1]
+    url = "https://www.aemet.es/xml/municipios/localidad_" + resource_id + ".xml"
+
+    xmlStream = urllib.request.urlopen(url)
+    aemet = Aemet(xmlStream)
+    general, days = aemet.predicciones()
+
+    info = data.CABECERA.format(municipio=general['municipio'],
+                                provincia=general['provincia'])
+
+    for day in days:
+        info = info + data.DAY.format(tempMin=day['tempMin'],
+                                      tempMax=day['tempMax'],
+                                      sensMin=day['sensMin'],
+                                      sensMax=day['sensMax'],
+                                      humMin=day['humMin'],
+                                      humMax=day['humMax'],
+                                      fecha=day['fecha'])
+
+    info = info + data.COPYRIGHT.format(copy=general['copyright'],
+                                        url="www.aemet.es/" + resource)
+
+
+def knownResource(link):
+    res = None
+    o = urlparse(link)
+    if o.netloc == 'www.aemet.es' or o.netloc == 'aemet.es':
+        pattern = re.compile("/es/eltiempo/prediccion/municipios/.+-id.+")
+        print(o.path)
+        # Si es un formato de recurso conocido
+        if pattern.match(o.path):
+            print('\n\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
+            print('Hemos reconocido el recurso')
+            res = processAemetInfo(o)
+        else:
+            print('No hemos reconocido el recurso')
+    return res
+
+
+def analizeLink(link):
+    print('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
+    print(link)
+    print('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
+    res = knownResource(link)
+    if res is None:
+        res = unknownResource(link)
+    # Get title
+    return res
+
+
 def index(request):
     if request.method == 'POST':
         if request.POST['votation'] == '1':
-            print('************************************************************************')
-            user = User.objects.get(id=request.user.id)
-            content = Content.objects.get(id=request.POST['content_id'])
-            print(str(user))
-            print(str(content))
-            v = Vote.objects.filter(user=user, content=content).first()
-            print(str(v))
-            if request.POST['vote'] == 'like':
-                if v is None :
-                    v = Vote(user=user, content=content, vote=1)
-                    content.positive += 1
-                    content.save()
-                    v.save()
-                    print("No hay ninún voto a este contenido")
-                else:
-                    if v.vote != 1:
-                        v.vote = 1
-                        content.positive += 1
-                        content.negative -= 1
-                        content.save()
-                        v.save()
-                    print("Ya hay algun vvoto de este contenido")
-                print('HAY QUE AÑADIR UN LIKE')
-            else:
-                if v is None :
-                    v = Vote(user=user, content=content, vote=-1)
-                    content.negative += 1
-                    content.save()
-                    v.save()
-                    print("No hay ninún voto a este contenido")
-                else:
-                    if v.vote != -1:
-                        v.vote = -1
-                        content.negative += 1
-                        content.positive -= 1
-                        content.save()
-                        v.save()
-                    print("Ya hay algun voto de este contenido")
-                print('HAY QUE AÑADIR UN DISLIKE')
-            print('************************************************************************')
+            votation(request)
         else:
             user = User.objects.get(user_name=request.user.username)
             title = request.POST['title']
             description = request.POST['description']
             link = request.POST['link']
-            c = Content(title=title, link=link, description=description, user=user)
-            print(str(user.password) + 'ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp')
+            info = analizeLink(link)
+            c = Content(title=title, link=link, description=description, user=user, extended_info=info)
             c.save()
 
 
@@ -81,10 +177,14 @@ def index(request):
     print(sorted_list)
     for i in sorted_list[:NLASTOBJ]:   # Ponemos en la respuesta los últimos objetos añadidos
         content_list.append(i)
-    one = content_list[0]
-    two = content_list[1]
-    three = content_list[2]
-    print(str(one) + str(two) + str(three))
+    one = None
+    two = None
+    three = None
+    if len(content_list) > 3:
+        one = content_list[0]
+        two = content_list[1]
+        three = content_list[2]
+
     # 2.- Cargar la plantilla
     template = loader.get_template('LoVisto/index.html')
 
@@ -165,9 +265,13 @@ def get_content(request, content_id):
         # 3.- Ligar las variables de la plantilla a las variables de python
         content2 = Content.objects.all()
         sorted_list = sorted(content2, key=attrgetter('id'), reverse=True)  # Ordenamos por id
-        one = sorted_list[0]
-        two = sorted_list[1]
-        three = sorted_list[2]
+        one = None
+        two = None
+        three = None
+        if len(sorted_list) > 3:
+            one = sorted_list[0]
+            two = sorted_list[1]
+            three = sorted_list[2]
 
         context = {
             'content': content,
@@ -197,9 +301,13 @@ def user_view(request):
         # 1.- Lista de contenidos
         content = Content.objects.all()
         sorted_list = sorted(content, key=attrgetter('id'), reverse=True)  # Ordenamos por id
-        one = sorted_list[0]
-        two = sorted_list[1]
-        three = sorted_list[2]
+        one = None
+        two = None
+        three = None
+        if len(sorted_list) > 3:
+            one = sorted_list[0]
+            two = sorted_list[1]
+            three = sorted_list[2]
 
         # Lista de comentarios
         user = User.objects.get(id=request.user.id)
@@ -251,9 +359,13 @@ def all_content(request):
     # 1.- Obtenemos el contenido
     content_list = Content.objects.all()
     sorted_list = sorted(content_list, key=attrgetter('id'), reverse=True) # Ordenamos por id
-    one = sorted_list[0]
-    two = sorted_list[1]
-    three = sorted_list[2]
+    one = None
+    two = None
+    three = None
+    if len(sorted_list) > 3:
+        one = sorted_list[0]
+        two = sorted_list[1]
+        three = sorted_list[2]
     # 2.- Cargar la plantilla
     template = loader.get_template('LoVisto/allcontent.html')
     # 3.- Ligar las variables de la plantilla a las variables de python
@@ -270,9 +382,13 @@ def all_content(request):
 def information(request):
     content_list = Content.objects.all()
     sorted_list = sorted(content_list, key=attrgetter('id'), reverse=True) # Ordenamos por id
-    one = sorted_list[0]
-    two = sorted_list[1]
-    three = sorted_list[2]
+    one = None
+    two = None
+    three = None
+    if len(sorted_list) > 3:
+        one = sorted_list[0]
+        two = sorted_list[1]
+        three = sorted_list[2]
     template = loader.get_template('LoVisto/information.html')
     # 3.- Ligar las variables de la plantilla a las variables de python
     context = {
