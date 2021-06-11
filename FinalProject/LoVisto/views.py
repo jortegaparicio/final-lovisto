@@ -7,6 +7,8 @@ import urllib.request
 import re
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
+from .aemet_parser import Aemet
+from . import data
 
 # Create your views here.
 NLASTOBJ = 10    # Number of the last objects that will be presented on the principal page
@@ -94,7 +96,6 @@ def knownResource2(link):
 
 def processAemetInfo(o):
     resource = o.path.split(sep='/')[-1]
-    municipio = resource.split(sep='-id')[0]
     resource_id = resource.split(sep='-id')[-1]
     url = "https://www.aemet.es/xml/municipios/localidad_" + resource_id + ".xml"
 
@@ -102,11 +103,11 @@ def processAemetInfo(o):
     aemet = Aemet(xmlStream)
     general, days = aemet.predicciones()
 
-    info = data.CABECERA.format(municipio=general['municipio'],
+    info = data.HEADER.format(municipio=general['municipio'],
                                 provincia=general['provincia'])
 
     for day in days:
-        info = info + data.DAY.format(tempMin=day['tempMin'],
+        info = info + data.DATE.format(tempMin=day['tempMin'],
                                       tempMax=day['tempMax'],
                                       sensMin=day['sensMin'],
                                       sensMax=day['sensMax'],
@@ -116,6 +117,9 @@ def processAemetInfo(o):
 
     info = info + data.COPYRIGHT.format(copy=general['copyright'],
                                         url="www.aemet.es/" + resource)
+    return info
+
+
 
 
 def knownResource(link):
