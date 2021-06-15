@@ -2,7 +2,7 @@
 HEADER = """
     <div class="aemet">
         <p>Datos AEMET para {municipio} ({provincia})</p>
-        <ul class="text-justify">"""
+        <ul>"""
 
 DATE = """
     <li>{fecha}. Temperatura: {tempMin}/{tempMax}, sensación: {sensMin}/{sensMax}, humedad: {humMin}/{humMax}.</li>"""
@@ -22,18 +22,17 @@ VIDEO = """<div class="youtube">
 
 # Templates for Reddit
 REDD_TEXT = """
-<div class="reddit_text">
+<div class="reddit">
     <p>Nota Reddit: {titulo}</p>
-
     <p>{texto}</p>
     <p><a href="{url}">Publicado en {subreddit}</a>. Aprobación: {aprobacion}.</p>
 </div>
 """
 
 REDD_IMG = """
-<div class="reddit_img" id="centrador">
+<div class="reddit">
     <p>Nota Reddit: {titulo}</p>
-    <img src="{url}" class="img-fluid redd_image">
+    <img src="{url}"  width="560" height="315"  class="img-fluid redd_image">
     <p><a href="{url}">Publicado en {subreddit}</a>. Aprobación: {aprobacion}.</p>
 </div>
 """
@@ -42,7 +41,7 @@ REDD_IMG = """
 OG = """
 <div class="og">
     <p>{titulo}</p>
-    <p><img src="{imagen}" class="img-fluid"></p>
+    <p><img src="{imagen}"  width="560" height="315" class="img-fluid"></p>
 </div>
 """
 

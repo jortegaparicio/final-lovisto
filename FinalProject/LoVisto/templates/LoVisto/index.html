@@ -13,122 +13,180 @@
 
 <div class="container">
 
-<div id="login">
-<table align=right>
-    <tr>
-        <td>
-            {% if not request.user.is_authenticated %}
-                <a href="/login">Login</a>
-            {% endif %}
-        </td>
-    </tr>
-    <tr>
-        <td >
-            {% if request.user.is_authenticated %}
-                <a href="logout">{{ request.user.username }} : {{ request.user.id }} -- Logout</a>
-            {% endif %}
-        </td>
-    </tr>
-</table>
-</div>
+<div class="row">
+    <div class="col">
+        <div id="image">
+            {% load static %}
+            <img src="{% static "LoVisto/LoVistoLogo.png" %}" class="float-left" alt="Logo de LoVisto" width="300" height="241">
+        </div>
+    </div>
+    {% if not request.user.is_authenticated %}
 
-<div id="image">
-    {% load static %}
-    <img src="{% static "LoVisto/LoVistoLogo.png" %}" alt="Logo de LoVisto"
-    width="300" height="241">
-</div>
+        <div class="col">
+            <form action="" method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="login">
 
-<div id="menu">
-        <h3>Menu:</h3>
-    <p>
-        <table>
-            <tr>
-                <td>
-                    <a href="/LoVisto/information">Información</a>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <a href="/LoVisto/allcontent">Todo</a>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <a href="">Descarga como fichero XML</a>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <a href="">Descarga como fichero JSON</a>
-                </td>
-            </tr>
-        </table>
-    </p>
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" class="form-control" placeholder="Username" name="username">
+                </div>
+                <div class="form-group">
+                    <label for="inputPassword">Password</label>
+                    <input type="password" class="form-control" name="password" id="inputPassword" placeholder="Password">
+                </div>
+                <div class="form-group">
+                    <label class="form-check-label"><input type="checkbox"> Remember me</label>
+                </div>
+                <button type="submit" class="btn btn-primary">Sign in</button>
+            </form>
+        </div>
+    {% else %}
+        <div class="col">
+            <h3 align="right">
+                <form action="" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="logout">
+                    {{ request.user.username }} : {{ request.user.id }}
+                    <button type="submit" class="btn btn-primary">Logout</button>
+                </form>
+        </div>
+    {% endif %}
 </div>
 
 
 
 
-    {% if content_list %}
-        {% for content in content_list%}
-            <div class="aportacion">
-                <h2>{{ content.title }}</h2>
-                <p class="description">{{ content.description }}</p>
-                <p class="data">Contribution from {{ content.user.user_name }}, send in {{ content.date }},
-                {{ content.num_comment }} comments,
-                    <a href="{{ content.id }}">more info</a></p>
 
-                <p class="vote">Positives: {{ content.positive }}. Negatives: {{ content.negative }}</p>
-                {{ content.extended_info }}
-                {% if request.user.is_authenticated %}
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <h2>Menu</h2>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNav">
+    <table class="navbar-nav">
+      <tr class="nav-item active">
+        <a class="nav-link" href="/LoVisto/information">Información <span class="sr-only"></span></a>
+      </tr>
+      <tr class="nav-item">
+        <a class="nav-link" href="/LoVisto/allcontent">Todo <span class="sr-only"></span></a>
+      </tr>
+      <tr class="nav-item">
+        <a class="nav-link" href="#">Fichero XML <span class="sr-only"></span> </a>
+      </tr>
+      <tr class="nav-item">
+        <a class="nav-link" href="#">Fichero JSON <span class="sr-only"></span> </a>
+      </tr>
+      <tr class="nav-item">
+        <a class="nav-link" href="#">Cambiar modo <span class="sr-only"></span> </a>
+      </tr>
+        {% if request.user.is_authenticated %}
+      <tr class="nav-item">
+        <a class="nav-link" href="/LoVisto/user">User page <span class="sr-only"></span> </a></p>
+      </tr>
+        {% endif %}
+    </table>
+  </div>
+
+        <!-- O si queremos incluir un logotipo y texto... -->
+<nav class="navbar navbar-light bg-light">
+  <a class="navbar-brand" href="#">
+      {% load static %}
+    <img src="{% static "LoVisto/LoVistoLogo.png" %}"  width="30" height="30" class="d-inline-block align-top" alt="">
+    LoVisto
+  </a>
+
+</nav>
+
+</nav>
+
+
+
+
+{% if content_list %}
+    {% for content in content_list %}
+        <div class="list-group">
+          <a href="" class="list-group-item list-group-item-action flex-column align-items-start active">
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">{{ content.title }}</h5>
+                    <small>{{ content.date }}</small>
+                </div>
+                     <p class="description"> {{ content.description }}</p>
+                     <p class="data"> Contribution from {{ content.user.user_name }}, sent in {{ content.date }},
+                     {{ content.num_comment }} comments,<a href="{{ content.id }}">more info</a> </p>
+                     <p class="vote"> Positives: {{ content.positive }}. Negatives: {{ content.negative }}</p>
+                        {% autoescape off %}
+                     <p> {{ content.extended_info }} </p>
+                        {% endautoescape %}
+          </a>
+                 {% if request.user.is_authenticated %}
                     <form action="" method="POST">
                         {% csrf_token %}
                         <p>
-                            <input type="hidden" name="votation" value="1">
+                            <input type="hidden" name="action" value="vote">
                             <input type="hidden" name="content_id" value="{{ content.id }}">
-                            <input type="submit" name="vote" value="like">
-                            <input type="submit" name="vote" value="dislike"></p>
+                            <input type="submit" class="btn btn-success" name="vote" value="like">
+                            <input type="submit" class="btn btn-danger" name="vote" value="dislike"></p>
                     </form>
                 {% endif %}
-            </div>
-        {% endfor %}
-    {% else %}
-        <p>No content now</p>
-    {% endif %}
-    {% if request.user.is_authenticated %}
+
+        </div>
+    {% endfor %}
+
+{% else %}
+    <p>No content now</p>
+{% endif %}
+
+
+
+{% if request.user.is_authenticated %}
+
+    <div class="row justify-content-center justify-content-md-start">
+
+        <div class="col">
         <h3>Add new content here:</h3>
+
         <form action="" method="POST">
           {% csrf_token %}
-            <input type="hidden" name="votation" value="0">
-            <p>Title: <input type="text" name="title"></p>
-            <p>Description: <input type="text" name="description"></p>
-            <p>Link: <input type="text" name="link"></p>
-            <p>
-            <input type="submit" value="Send">
+            <input type="hidden" name="action" value="addContent">
+            Title <input type="text" class="form-control" name="title">
+            Description: <input type="text" class="form-control" name="description">
+            Link: <input type="text" class="form-control" name="link">
+
+            <input type="submit" class="btn btn-primary" value="Send">
           </p>
         </form>
+        </div>
+        <div class="col">
+            <h3>Short list:</h3>
+                <ul class="list-group">
+                    {% for content in content_user_list %}
+                    <li class="list-group-item" class="resumida"><a href="{{ content.id }}">{{ content.title }}</a></li>
+                    {% endfor %}
+                </ul>
+        </div>
+    </div>
 
-        <a href="/LoVisto/user">User page</a></p>
+{% endif %}
 
-        <h2>SHORT LIST</h2>
-        {% for content in content_user_list %}
-            <p class="resumida">
-                <a href="{{ content.id }}">{{ content.title }}</a></p>
-        {% endfor %}
-    {% endif %}
+<footer class="bg-light text-center text-lg-start">
 
-<footer>
-    <p>Esta aplicación enlaza a <a href="{{ one.id }}">{{ one.title }}</a>, <a href="{{ two.id }}">
+  <!-- Copyright -->
+  <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.2);">
+
+          <p>Esta aplicación enlaza a <a href="{{ one.id }}">{{ one.title }}</a>, <a href="{{ two.id }}">
         {{ two.title }}</a>, <a href="{{ three.id }}">{{ three.title }}</a> y muchos otros sitios</p>
+    © 2020 Copyright:
+    <a class="text-dark" href="https://mdbootstrap.com/">MDBootstrap.com</a>
+  </div>
+  <!-- Copyright -->
 </footer>
-
-
-</div>
-
 
 <!-- Option 1: Bootstrap Bundle with Popper -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
 
+</div>
 
 </body>
 </html>

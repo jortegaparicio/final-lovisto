@@ -2,7 +2,7 @@ from django.http import HttpResponse
 from .models import Content, User, Comment, Vote
 from django.template import loader
 from operator import attrgetter
-from django.contrib.auth import logout
+from django.contrib.auth import logout, login, authenticate
 import urllib.request
 import re
 from bs4 import BeautifulSoup
@@ -53,28 +53,27 @@ def votation(request):
 def unknownResource(link):
     try:
         res = None
-
         htmlStream = urllib.request.urlopen(link)
         soup = BeautifulSoup(htmlStream, 'html.parser')
         ogTitle = soup.find('meta', property='og:title')
         if ogTitle:
             ogImage = soup.find('meta', property='og:image')
             if ogImage:
-                res = '<div class="og"> <p>' + str(ogTitle['content']) + '</p> <img src="' + str(ogImage['content']) + '"></div>'
+                res = data.OG.format(titulo=ogTitle['content'], imagen=str(ogImage['content']))
             else:
                 title = soup.title.string
                 if title is not None:
-                    res = '<div class="html"><p>' + str(title) + '</p></div>'
+                    res = data.TITLE.format(titulo=str(title))
                 else:
-                    res = '<div class html="html"><p>Información extendida no disponible</p></div>'
+                    res = data.NO_INFO.format()
         else:
             title = soup.title.string
             if title is not None:
-                res = '<div class="html"><p>' + str(title) + '</p></div>'
+                res = data.TITLE.format(titulo=title)
             else:
-                res = '<div class html="html"><p>Información extendida no disponible</p></div>'
+                res = data.NO_INFO.format()
     except:
-        res = '<div class html="html"><p>Información extendida no disponible</p></div>'
+        res = data.NO_INFO.format()
 
     return res
 
@@ -129,9 +128,14 @@ def processYT(path):
     jsonStream = urllib.request.urlopen(url)
     video = Youtube(jsonStream)
     information = video.info()
+    print('IMPORTANTE = ' + information['video'])
+    aux = information['video']
+    aux = aux.replace('="200"', '="560"')
+    aux = aux.replace('="113"', '="315"')
+    print('ACCBEFGHIJKLMNÑOPQRSTU = '+aux)
 
     info = data.VIDEO.format(titulo=information['titulo'],
-                             video=information['video'],
+                             video=aux,
                              nombre_autor=information['nombre_autor'],
                              link_autor=information['link_autor'],
                              url=video_id)
@@ -211,10 +215,28 @@ def analizeLink(link):
     return res
 
 
+def login_r(request):
+    username = request.POST['username']
+    password = request.POST['password']
+    user_auth = authenticate(request, username=username, password=password)
+
+    if user_auth is not None:
+        login(request, user_auth)
+        try:
+            User.objects.get(user_name=username)
+        except User.DoesNotExist:
+            user = User(user_name=username, password=password)
+            user.save()
+
+
 def index(request):
     if request.method == 'POST':
-        if request.POST['votation'] == '1':
+        if request.POST['action'] == 'vote':
             votation(request)
+        elif request.POST['action'] == 'logout':
+            logout(request)
+        elif request.POST['action'] == 'login':
+            login_r(request)
         else:
             user = User.objects.get(user_name=request.user.username)
             title = request.POST['title']
@@ -251,6 +273,9 @@ def index(request):
         two = content_list[1]
         three = content_list[2]
 
+    print(one)
+    print(two)
+    print(three)
     # 2.- Cargar la plantilla
     template = loader.get_template('LoVisto/index.html')
 
@@ -271,45 +296,12 @@ def get_content(request, content_id):
 
     # POST
     if request.method == 'POST':
-        if request.POST['votation'] == '1':
-            print('************************************************************************')
-            user = User.objects.get(id=request.user.id)
-            content = Content.objects.get(id=request.POST['content_id'])
-            print(str(user))
-            print(str(content))
-            v = Vote.objects.filter(user=user, content=content).first()
-            print(str(v))
-            print('Hay que votar')
-            if request.POST['vote'] == 'like':
-                if v is None :
-                    v = Vote(user=user, content=content, vote=1)
-                    content.positive += 1
-                    content.save()
-                    v.save()
-                    print("No hay ninún voto a este contenido")
-                else:
-                    if v.vote != 1:
-                        v.vote = 1
-                        content.positive += 1
-                        content.negative -= 1
-                        content.save()
-                        v.save()
-                    print("Ya hay algun vvoto de este contenido")
-                print('HAY QUE AÑADIR UN LIKE')
-            else:
-                if v is None :
-                    v = Vote(user=user, content=content, vote=-1)
-                    content.negative += 1
-                    content.save()
-                    v.save()
-                    print("No hay ninún voto a este contenido")
-                else:
-                    if v.vote != -1:
-                        v.vote = -1
-                        content.negative += 1
-                        content.positive -= 1
-                        content.save()
-                        v.save()
+        if request.POST['action'] == 'vote':
+            votation(request)
+        elif request.POST['action'] == 'logout':
+            logout(request)
+        elif request.POST['action'] == 'login':
+            login_r(request)
         else:
             user = User.objects.get(user_name=request.user.username)
             content = Content.objects.get(id=content_id)
@@ -324,7 +316,7 @@ def get_content(request, content_id):
         # 1.- Obtenemos el contenido
         content = Content.objects.get(id=content_id)
         comment_list = content.comment_set.all()
-        sorted_list = sorted(comment_list, key=attrgetter('id'), reverse=True)  # Ordenamos por id
+        sorted_comment_list = sorted(comment_list, key=attrgetter('date'), reverse=True)  # Ordenamos por id
 
         # 2.- Cargar la plantilla
         template = loader.get_template('LoVisto/content.html')
@@ -341,7 +333,7 @@ def get_content(request, content_id):
 
         context = {
             'content': content,
-            'comment_list': sorted_list,
+            'comment_list': sorted_comment_list,
             'one': one,
             'two': two,
             'three': three
@@ -362,6 +354,12 @@ def get_content(request, content_id):
 
 
 def user_view(request):
+    if request.method == 'POST':
+        if request.POST['action'] == 'logout':
+            logout(request)
+        elif request.POST['action'] == 'login':
+            login_r(request)
+
 
     if request.user.is_authenticated:
         # 1.- Lista de contenidos
@@ -415,7 +413,7 @@ def user_view(request):
             'three': three
         }
     else:
-        template = loader.get_template('LoVisto/notAuthenticated.html')
+        template = loader.get_template('LoVisto/user.html')
         context = {}
     # Renderizar
     return HttpResponse(template.render(context, request))
