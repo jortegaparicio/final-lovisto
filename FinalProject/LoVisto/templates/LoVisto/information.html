@@ -11,18 +11,15 @@
 </head>
 <body>
 
-
 <div class="container">
-
     <div class="row">
     <div class="col">
         <div id="image">
             {% load static %}
-            <img src="{% static "LoVisto/LoVistoLogo.png" %}" class="float-left" alt="Logo de LoVisto" width="300" height="241">
+            <img src="{% static "img/banner.png" %}" class="float-left" alt="Logo de LoVisto" width="300" height="241">
         </div>
     </div>
     {% if not request.user.is_authenticated %}
-
         <div class="col" id="login">
             <form action="/LoVisto/" method="POST" class="list-group">
                 {% csrf_token %}
@@ -55,14 +52,12 @@
     {% endif %}
     </div>
 
-
 <div class="row" id="menu">
     <nav class="container-fluid  navbar navbar-expand-lg navbar-light bg-light">
-          <h2>Menu</h2>
+        <h2>Menú</h2>
           <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
           </button>
-          <div class="collapse navbar-collapse" id="navbarNav">
             <table class="navbar-nav">
               <tr class="nav-item active">
                 <a class="nav-link" href="/LoVisto/">Inicio <span class="sr-only"></span></a>
@@ -71,42 +66,49 @@
                 <a class="nav-link" href="/LoVisto/allcontent">Todo <span class="sr-only"></span></a>
               </tr>
               <tr class="nav-item">
-                <a class="nav-link" href="/LoVisto/allcontent?format=xml">Fichero XML <span class="sr-only"></span> </a>
+                <a class="nav-link" href="/LoVisto/allcontent?format=xml">Descarga como fichero XML <span class="sr-only"></span> </a>
               </tr>
               <tr class="nav-item">
-                <a class="nav-link" href="/LoVisto/allcontent?format=json">Fichero JSON <span class="sr-only"></span> </a>
+                <a class="nav-link" href="/LoVisto/allcontent?format=json">Descarga como fichero JSON <span class="sr-only"></span> </a>
               </tr>
               {% if request.user.is_authenticated %}
                   <tr class="nav-item">
-                    <a class="nav-link" href="/LoVisto/user">User page <span class="sr-only"></span> </a></p>
+                    <a class="nav-link" href="/LoVisto/user">Página de usuario <span class="sr-only"></span> </a></p>
                   </tr>
         {% endif %}
             </table>
-          </div>
-
       <tr class="nav-item">
-
           <form action="" method="POST">
               {% csrf_token %}
               <input type="hidden" name="action" value="changeMode">
               <button type="submit" class="nav-link">Cambiar modo<span class="sr-only"></span></button>
-
           </form>
-
-
       </tr>
     </nav>
 
-
 <p><b>Author</b>: Juan Antonio Ortega Aparicio</p>
-<br><p>Esta aplicación trata de una red social en la que podemos subir contenidos
-  a modo de enlaces.
+<p><b>Nombre de la API</b>: LoVisto</p>
+<p><b>Version</b>: 1.0</p>
+<p><b>Fecha</b>: 07/07/2021</p>
+<p><br><b>--Descripción--</b></p>
+<br><p>Práctica final del curso 2020/2021 de la asignatura de SAT. Se trata de una red social en la que los usuarios podrán subir
+    enlaces a contenidos que nos podemos encontrar en la web, pudiendo interactuar con dichos contenidos en forma de likes o dislikes
+    o bien añadiendo nuevos comentarios. La red social está implementada de tal manera que no será necesario loggearse para poder usarla, sin
+    embargo, si queremos añadir contenidos a la red social se dispone de un sistema de login de usuarios para que puedas registrarte y añadir
+    cualquier contenido de tu gusto. Además se incluye un botón para pasar la página a modo oscuro en el menú.
 </p>
+<p><br><b>--Documentación--</b></p>
+<br><p>
+La implementación de esta red social se ha realizado en Python y se ha desplegado utilizando PythonAnywhere. El código de la red social está referenciado
+    en el archivo views.py del proyecto de Django al que se referencia desde urls.py. Adicionalmente los ficheros css se encuentran en el directorio
+    de archivos estáticos de la API, al igual que el banner incorporado en la parte superior izquierda. Todos los contenidos de nuestros usuarios se guardan dentro
+    de sqlite (una base de datos), además del nombre y contraseña del usuario.
+</p>
+
  <footer class="bg-light text-center text-lg-start">
 
       <!-- Copyright -->
       <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.2);">
-
               <p>Esta aplicación enlaza a <a href="{{ one.id }}">{{ one.title }}</a>, <a href="{{ two.id }}">
             {{ two.title }}</a>, <a href="{{ three.id }}">{{ three.title }}</a> y muchos otros sitios</p>
         © 2020 Copyright:

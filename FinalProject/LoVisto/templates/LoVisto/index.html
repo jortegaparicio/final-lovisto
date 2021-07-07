@@ -14,7 +14,6 @@
 <body>
 
 <div class="container">
-
 <div class="row">
     <div class="col">
         <div id="image">
@@ -22,9 +21,7 @@
             <img src="{% static "img/banner.png" %}" class="float-left" alt="Logo de LoVisto" width="300" height="241">
         </div>
     </div>
-
     {% if not request.user.is_authenticated %}
-
         <div class="col" id="login">
             <form action="" method="POST" class="list-group">
                 {% csrf_token %}
@@ -57,13 +54,9 @@
     {% endif %}
 </div>
 
-
-
 <div class="row" id="menu">
         <nav class="navbar navbar-expand-lg navbar-light bg-light" id="prueba" >
-
-  <div class="collapse navbar-collapse" id="navbarNav" >
-        <h2>Menu</h2>
+        <h2>Menú</h2>
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>
@@ -83,27 +76,21 @@
 
         {% if request.user.is_authenticated %}
       <tr class="nav-item">
-        <a class="nav-link" href="/LoVisto/user">User page <span class="sr-only"></span> </a></p>
+        <a class="nav-link" href="/LoVisto/user">Página de usuario <span class="sr-only"></span> </a></p>
       </tr>
         {% endif %}
     </table>
-  </div>
-
+    {% if request.user.is_authenticated %}
       <tr class="nav-item">
-
           <form action="" method="POST">
               {% csrf_token %}
               <input type="hidden" name="action" value="changeMode">
               <button type="submit" class="nav-link">Cambiar modo<span class="sr-only"></span></button>
-
           </form>
-
-
       </tr>
+    {% endif %}
 </nav>
-
 </div>
-
 
 <div class="row">
 {% if content_list %}
@@ -132,32 +119,23 @@
                             <input type="submit" class="btn btn-danger" name="vote" value="dislike"></p>
                     </form>
                 {% endif %}
-
         </div>
     {% endfor %}
-
 {% else %}
     <p>No content now</p>
 {% endif %}
-
 </div>
-
 <div class="row">
-
 {% if request.user.is_authenticated %}
-
     <div class="row justify-content-center justify-content-md-start">
-
         <div class="col">
         <h3>Add new content here:</h3>
-
         <form action="" method="POST">
           {% csrf_token %}
             <input type="hidden" name="action" value="addContent">
             Title <input type="text" class="form-control" name="title">
             Description: <input type="text" class="form-control" name="description">
             Link: <input type="text" class="form-control" name="link">
-
             <input type="submit" class="btn btn-primary" value="Send">
           </p>
         </form>
@@ -166,23 +144,18 @@
             <h3>Short list:</h3>
                 <ul class="list-group">
                     {% for content in content_user_list %}
-                    <li class="list-group-item" class="resumida" style="background-color: rgba(0, 0, 0, 0.2);"><a href="{{ content.id }}">{{ content.title }}</a></li>
+                    <li class="list-group-item" class="resumida" style="background-color: rgba(0, 0, 0, 0.2);"><a class="text-white" href="{{ content.id }}">{{ content.title }}</a></li>
                     {% endfor %}
                 </ul>
         </div>
     </div>
-
 {% endif %}
-
-
 </div>
-
     <div class="row">
 <footer class="bg-light text-center text-lg-start">
 
   <!-- Copyright -->
   <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.2);">
-
           <p>Esta aplicación enlaza a <a href="{{ one.id }}">{{ one.title }}</a>, <a href="{{ two.id }}">
         {{ two.title }}</a>, <a href="{{ three.id }}">{{ three.title }}</a> y muchos otros sitios</p>
     © 2020 Copyright:

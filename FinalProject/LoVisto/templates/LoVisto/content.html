@@ -14,21 +14,18 @@
 
 <div class="container">
 
-
-<div class="row">
+    <div class="row">
     <div class="col">
         <div id="image">
             {% load static %}
-            <img src="{% static "LoVisto/LoVistoLogo.png" %}" class="float-left" alt="Logo de LoVisto" width="300" height="241">
+            <img src="{% static "img/banner.png" %}" class="float-left" alt="Logo de LoVisto" width="300" height="241">
         </div>
     </div>
     {% if not request.user.is_authenticated %}
-
         <div class="col" id="login">
             <form action="" method="POST">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="login">
-
                 <div class="form-group">
                     <label>Username</label>
                     <input type="text" class="form-control" placeholder="Username" name="username">
@@ -56,18 +53,12 @@
     {% endif %}
 </div>
 
-
-
-
-
 <div class="row" id="menu">
-
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
-  <h2>Menu</h2>
+        <h2>Menú</h2>
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>
-  <div class="collapse navbar-collapse" id="navbarNav">
     <table class="navbar-nav">
       <tr class="nav-item active">
         <a class="nav-link" href="/LoVisto/">Inicio <span class="sr-only"></span></a>
@@ -79,31 +70,24 @@
         <a class="nav-link" href="/LoVisto/allcontent">Todo <span class="sr-only"></span></a>
       </tr>
      <tr class="nav-item">
-        <a class="nav-link" href="/LoVisto/allcontent?format=xml">Fichero XML <span class="sr-only"></span> </a>
+                <a class="nav-link" href="/LoVisto/allcontent?format=xml">Descarga como fichero XML <span class="sr-only"></span> </a>
       </tr>
       <tr class="nav-item">
-        <a class="nav-link" href="/LoVisto/allcontent?format=json">Fichero JSON <span class="sr-only"></span> </a>
+                <a class="nav-link" href="/LoVisto/allcontent?format=json">Descarga como fichero JSON <span class="sr-only"></span> </a>
       </tr>
         {% if request.user.is_authenticated %}
       <tr class="nav-item">
-        <a class="nav-link" href="/LoVisto/user">User page <span class="sr-only"></span> </a></p>
+        <a class="nav-link" href="/LoVisto/user">Página de usuario <span class="sr-only"></span> </a></p>
       </tr>
         {% endif %}
     </table>
-  </div>
-
       <tr class="nav-item">
-
           <form action="" method="POST">
               {% csrf_token %}
               <input type="hidden" name="action" value="changeMode">
               <button type="submit" class="nav-link">Cambiar modo<span class="sr-only"></span></button>
-
           </form>
-
-
       </tr>
-
 </nav>
 </div>
 <div class="row">
@@ -135,10 +119,7 @@
 
 </div>
 </div>
-
-
 <div class="row">
-
 {% if comment_list %}
     <h3>Comments:</h3>
     <div class="list-group">
@@ -157,7 +138,6 @@
 {% endif %}
 </div>
 <div class="row">
-
 {% if request.user.is_authenticated %}
     <ul class="list-group">
         <form class="form-horizontal" role="form" action="" method="POST">
@@ -181,19 +161,14 @@
 <div class="row">
 
 <footer class="bg-light text-center text-lg-start">
-
   <!-- Copyright -->
   <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.2);">
-
           <p>Esta aplicación enlaza a <a href="{{ one.id }}">{{ one.title }}</a>, <a href="{{ two.id }}">
         {{ two.title }}</a>, <a href="{{ three.id }}">{{ three.title }}</a> y muchos otros sitios</p>
     © 2020 Copyright:
     <a class="text-dark" href="https://mdbootstrap.com/">MDBootstrap.com</a>
   </div>
 </footer>
-
-
-
 </div>
 </div>
 

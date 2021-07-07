@@ -13,16 +13,18 @@ from .redditParser import Reddit
 from . import data
 from django.shortcuts import render
 
-# Create your views here.
 NLASTOBJ = 10    # Number of the last objects that will be presented on the principal page
 NLASTAPORT = 5   # Number of the last aportations that will be presented on the principal page
 
-
-
+"""
+Este método se encarga del sistema de votación de la API, el cual no permite que un usuario
+haga más de una votación por cada publicación
+"""
 def votation(request):
     user = User.objects.get(id=request.user.id)
     content = Content.objects.get(id=request.POST['content_id'])
     v = Vote.objects.filter(user=user, content=content).first()
+
     if request.POST['vote'] == 'like':
         if v is None:
             v = Vote(user=user, content=content, vote=1)
@@ -50,24 +52,32 @@ def votation(request):
                 content.save()
                 v.save()
 
+"""
+Método encargado de analizar los recursos categorizados como no reconocidos
+"""
 def unknownResource(link):
     try:
-        res = None
         htmlStream = urllib.request.urlopen(link)
         soup = BeautifulSoup(htmlStream, 'html.parser')
         ogTitle = soup.find('meta', property='og:title')
+
         if ogTitle:
             ogImage = soup.find('meta', property='og:image')
+
             if ogImage:
                 res = data.OG.format(titulo=ogTitle['content'], imagen=str(ogImage['content']))
             else:
                 title = soup.title.string
+
                 if title is not None:
                     res = data.TITLE.format(titulo=str(title))
                 else:
                     res = data.NO_INFO.format()
+
         else:
+
             title = soup.title.string
+
             if title is not None:
                 res = data.TITLE.format(titulo=title)
             else:
@@ -77,24 +87,9 @@ def unknownResource(link):
 
     return res
 
-def knownResource2(link):
-    res = None
-    o = urlparse(link)
-    print('PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP')
-    if o.netloc == 'www.aemet.es' or o.netloc == 'aemet.es':
-        resource = o.path.split(sep='/')[-1]
-        municipio = resource.split(sep='-id')[0]
-        id = resource.split(sep='-id')[-1]
-        print('Municipio = ' + municipio + '  ID = ' + str(id))
-        if o.path == '/es/eltiempo/prediccion/municipios/' + str(municipio) + '-id' + str(id):
-            print('Lo Estamos reconociendo')
-
-        else:
-            print('No lo hemos podido reconocer')
-    else:
-        print('No lo hemos podido reconocer')
-    return res
-
+"""
+Método que se encarga del formato de las publicaciones de AEMET tal y como se indica en el enunciado
+"""
 def processAemetInfo(path):
     resource = path.split(sep='/')[-1]
     resource_id = resource.split(sep='-id')[-1]
@@ -120,7 +115,9 @@ def processAemetInfo(path):
                                         url="www.aemet.es/" + resource)
     return info
 
-
+"""
+Método que se encarga de las publicaciones de youtube tal y como se nos indica en el enunciado
+"""
 def processYT(path):
     video_id = path.split(sep='=')[-1]
     url = 'https://www.youtube.com/oembed?format=json&url=https://www.youtube.com/watch?v=' + video_id
@@ -128,26 +125,25 @@ def processYT(path):
     jsonStream = urllib.request.urlopen(url)
     video = Youtube(jsonStream)
     information = video.info()
-    print('IMPORTANTE = ' + information['video'])
+
     aux = information['video']
     aux = aux.replace('="200"', '="560"')
     aux = aux.replace('="113"', '="315"')
-    print('ACCBEFGHIJKLMNÑOPQRSTU = '+aux)
 
     info = data.VIDEO.format(titulo=information['titulo'],
                              video=aux,
                              nombre_autor=information['nombre_autor'],
                              link_autor=information['link_autor'],
                              url=video_id)
+
     return info
 
-
+"""
+Método que se encarga de analizar las publicaciones procedentes de reddit tal y como se nos indica en el enunciado
+"""
 def processReddit(path):
-    print('PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPAAAAAAAAAAAAAAAAAAAAAAAAAAAAJJJJJJJJJJJJJJJJJJJJJJJJJJJJ' + path)
     reddit_id = path.split(sep='/')[-3]
-    print('\n\n' + reddit_id + '\n\n')
     url = 'https://www.reddit.com/r/django/comments/' + reddit_id + '/.json'
-    print(path)
     jsonStreamReddit = urllib.request.urlopen(url)
     reddit = Reddit(jsonStreamReddit)
     information = reddit.info()
@@ -167,7 +163,9 @@ def processReddit(path):
                                      aprobacion=information['aprobacion'])
     return info
 
-
+"""
+Método que se encarga de detectar los recursos que son conocidos y de mandarlos a procesar
+"""
 def knownResource(link):
     res = None
     o = urlparse(link)
@@ -176,23 +174,14 @@ def knownResource(link):
 
     if netloc == 'www.aemet.es' or netloc == 'aemet.es':
         pattern = re.compile("/es/eltiempo/prediccion/municipios/.+-id.+")
-        print(path)
         # Si es un formato de recurso conocido
         if pattern.match(path):
-            print('\n\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
-            print('Hemos reconocido el recurso')
             res = processAemetInfo(path)
-        else:
-            print('No hemos reconocido el recurso')
 
     if netloc == 'www.youtube.com' or netloc == 'youtube.com':
         path = link.split(sep='/')[-1]
         pattern = re.compile("watch\?v=.+")
-
         if pattern.match(path):
-            print('\n\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
-            print(path)
-            print('PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPAAAAAAAAAAAAAAAAAAAAAAAAAAAAJJJJJJJJJJJJJJJJJJJJJJJJJJJJ' + path)
             res = processYT(path)
 
     if netloc == 'www.reddit.com' or netloc == 'reddit.com':
@@ -200,21 +189,22 @@ def knownResource(link):
         if pattern.match(path):
             res = processReddit(path)
 
-
     return res
 
 
+"""
+Método encargado de distribuir el flujo entre los recursos reconocidos y los no reconocidos
+"""
 def analizeLink(link):
-    print('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
-    print(link)
-    print('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
     res = knownResource(link)
     if res is None:
         res = unknownResource(link)
     # Get title
     return res
 
-
+"""
+Método encargado de la gestión de usuarios
+"""
 def login_r(request):
     username = request.POST['username']
     password = request.POST['password']
@@ -228,10 +218,12 @@ def login_r(request):
             user = User(user_name=username, password=password)
             user.save()
 
+"""
+Método encargado de cambiar el css cuando el usuario esté registrado
+"""
 def chMode(request):
     if request.user.is_authenticated:
         user = User.objects.get(id=request.user.id)
-        print(user.mode)
         cssDir = user.mode
         if cssDir == 'css/LoVisto/dark.css':
             user.mode = 'css/LoVisto/style.css'
@@ -239,17 +231,21 @@ def chMode(request):
             user.mode = 'css/LoVisto/dark.css'
         user.save()
 
-
+"""
+Método encargado de obtener el css de un usuario
+"""
 def getMode(request):
     if request.user.is_authenticated:
         user = User.objects.get(id=request.user.id)
-        print(user.mode)
         cssDir = user.mode
     else:
         cssDir = 'css/LoVisto/style.css'
 
     return cssDir
 
+"""
+Método que se encarga de la página principal de la API
+"""
 def index(request):
 
     if request.method == 'POST':
@@ -274,7 +270,7 @@ def index(request):
     # 1.- Lista de contenidos
     content = Content.objects.all()
 
-    # --> Lista de las últimas aportaciones del usuario
+    # Lista de las últimas aportaciones del usuario
     user_list = []
     content_user_list = []
     for i in content:   # Ponemos en la respuesta los últimos objetos añadidos
@@ -283,24 +279,22 @@ def index(request):
     for i in user_list[:NLASTAPORT]:
         content_user_list.append(i)
 
-    # --> Lista de las ultimas aportaciones de todos los usuarios
+    # Lista de las ultimas aportaciones de todos los usuarios
     content_list = []
     sorted_list = sorted(content, key=attrgetter('id'), reverse=True) # Ordenamos por id
-    print(sorted_list)
     for i in sorted_list[:NLASTOBJ]:   # Ponemos en la respuesta los últimos objetos añadidos
         content_list.append(i)
+
     one = None
     two = None
     three = None
+
     if len(content_list) > 3:
         one = content_list[0]
         two = content_list[1]
         three = content_list[2]
 
-    print(one)
-    print(two)
-    print(three)
-
+    # Obtenemos el modo de vista
     cssDir = getMode(request)
 
     # 2.- Cargar la plantilla
@@ -319,7 +313,10 @@ def index(request):
     # 4.- Renderizar
     return HttpResponse(template.render(context, request))
 
-
+"""
+Métooo encargado de la página de cada publicación, el cual deja un enlace al sitio web
+que contiene la publicación
+"""
 def get_content(request, content_id):
 
     # POST
@@ -348,20 +345,24 @@ def get_content(request, content_id):
         comment_list = content.comment_set.all()
         sorted_comment_list = sorted(comment_list, key=attrgetter('date'), reverse=True)  # Ordenamos por id
 
-        cssDir = getMode(request)
-
         # 2.- Cargar la plantilla
         template = loader.get_template('LoVisto/content.html')
+
         # 3.- Ligar las variables de la plantilla a las variables de python
         content2 = Content.objects.all()
         sorted_list = sorted(content2, key=attrgetter('id'), reverse=True)  # Ordenamos por id
+
         one = None
         two = None
         three = None
+
         if len(sorted_list) > 3:
             one = sorted_list[0]
             two = sorted_list[1]
             three = sorted_list[2]
+
+        # Obtenemos el modo de vista
+        cssDir = getMode(request)
 
         context = {
             'content': content,
@@ -385,8 +386,11 @@ def get_content(request, content_id):
             response = 'You are not authenticated. <a href="/login">Authentication here</a>'
     return HttpResponse(response)
 
-
+"""
+Método encargado de la página de usuario de la API
+"""
 def user_view(request):
+
     if request.method == 'POST':
         if request.POST['action'] == 'logout':
             logout(request)
@@ -395,15 +399,16 @@ def user_view(request):
         elif request.POST['action'] == 'changeMode':
             chMode(request)
 
-
-
     if request.user.is_authenticated:
+
         # 1.- Lista de contenidos
         content = Content.objects.all()
         sorted_list = sorted(content, key=attrgetter('id'), reverse=True)  # Ordenamos por id
+
         one = None
         two = None
         three = None
+
         if len(sorted_list) > 3:
             one = sorted_list[0]
             two = sorted_list[1]
@@ -411,36 +416,35 @@ def user_view(request):
 
         # Lista de comentarios
         user = User.objects.get(id=request.user.id)
-        print(str(user) + '++++++++++++++++++++++++++++++++++++++++++++++++++ñññllllllllllllllllllllllllllllllllllllllllllllllll')
         comment_list = user.comment_set.all()
-        print(comment_list)
         comment_user_list = []
+
         for i in comment_list:
             if i.user.id == request.user.id:
                 comment_user_list.append(i)
-        print(comment_user_list)
 
         # Lista de las aportaciones del usuario
         content_list = []
+
         for i in content:   # Ponemos en la respuesta los últimos objetos añadidos
-            print(str(i.user.id) + ' : ' + str(request.user.id))
             if i.user.id == request.user.id:
                 content_list.append(i)
-            print(content_list)
+
         sorted_list = sorted(content_list, key=attrgetter('date'), reverse=True) # Ordenamos por fecha
 
         # Lista de los votos del usuario
         vote_list = user.vote_set.all()
         vote_user_list = []
+
         for i in vote_list:
             if i.user.id == request.user.id:
                 vote_user_list.append(i)
-        print(vote_user_list)
 
         cssDir = getMode(request)
 
         # 2.- Cargar la plantilla
         template = loader.get_template('LoVisto/user.html')
+
         # 3.- Ligar las variables de la plantilla a las variables de python
         context = {
             'content_list': sorted_list,
@@ -454,10 +458,12 @@ def user_view(request):
     else:
         template = loader.get_template('LoVisto/user.html')
         context = {}
-    # Renderizar
+
     return HttpResponse(template.render(context, request))
 
-
+"""
+Método encargado de la página de todos los contenidos de los usuarios
+"""
 def all_content(request):
 
     if request.method == 'POST':
@@ -491,14 +497,17 @@ def all_content(request):
     # 1.- Obtenemos el contenido
     content_list = Content.objects.all()
     sorted_list = sorted(content_list, key=attrgetter('id'), reverse=True) # Ordenamos por id
+
     one = None
     two = None
     three = None
+
     if len(sorted_list) > 3:
         one = sorted_list[0]
         two = sorted_list[1]
         three = sorted_list[2]
 
+    # Obtenemos el modo de vista
     cssDir = getMode(request)
 
     # 2.- Cargar la plantilla
@@ -514,8 +523,11 @@ def all_content(request):
     # Renderizar
     return HttpResponse(template.render(context, request))
 
-
+"""
+Método encargado de dar funcionalidad a la página de información dee la red social
+"""
 def information(request):
+
     if request.method == 'POST':
         if request.POST['action'] == 'logout':
             logout(request)
@@ -526,14 +538,17 @@ def information(request):
 
     content_list = Content.objects.all()
     sorted_list = sorted(content_list, key=attrgetter('id'), reverse=True) # Ordenamos por id
+
     one = None
     two = None
     three = None
+
     if len(sorted_list) > 3:
         one = sorted_list[0]
         two = sorted_list[1]
         three = sorted_list[2]
 
+    # Obtenemos el modo de vista
     cssDir = getMode(request)
 
     template = loader.get_template('LoVisto/information.html')
@@ -544,33 +559,5 @@ def information(request):
         'three': three,
         'cssDir': cssDir
     }
-    # Renderizar
-    return HttpResponse(template.render(context, request))
-
-
-def json_view(request):
-    return None
-
-
-def loged_in(request):
-    if request.user.is_authenticated:
-        # Guardamos el nuevo usuario en nuestra lista de usuarios
-        try:
-            User.objects.get(user_name=request.user.username)
-        except User.DoesNotExist:
-            user = User(user_name=request.user.username, password=request.user.password)
-            user.save()
-        template = loader.get_template('LoVisto/login.html')
-
-    else:
-        template = loader.get_template('LoVisto/notAuthenticated.html')
-    return HttpResponse(template.render({}, request))
-
-
-def logout_view(request):
-    logout(request)
-    template = loader.get_template('LoVisto/logout.html')
-    # 3.- Ligar las variables de la plantilla a las variables de python
-    context = {}
     # Renderizar
     return HttpResponse(template.render(context, request))

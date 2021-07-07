@@ -1,36 +1,37 @@
 body {
-    color: brown;
+    color: #CCCCCC;
     font-size: 20px;
-    background-color: gray;
+    background-color: #660099;
     font-family: 'Lobster';
 }
 
 footer {
-    color: brown;
+    color: #CCCCCC;
     font-size: 20px;
-    background-color: gray;
+    background-color: #660099;
 }
 
 #menu {
     color: brown;
     font-size: 20px;
-    background-color: gray;
+    background-color: mazarine;
     margin-top: 0;
     padding: 20px 20px 20px 40px;
 }
 
 #logout {
-    color: brown;
+    color: #CCCCCC;
     font-size: 50px;
-    background-color: gray;
+    background-color:#660066;
     margin-top: 0;
     padding: 20px 20px 20px 40px;
 }
 
 #login {
-    color: brown;
+    color: #CCCCCC;
     font-size: 20px;
-    background-color: gray;
+
+    background-color: #660066;
     margin-top: 0;
     padding: 20px 20px 20px 40px;
 }
@@ -42,26 +43,26 @@ footer {
 
 .list-group{
     border: 4px solid #1E679A;
-    background-color: gray;
+    background-color: #000066;
     margin-top: 0;
     padding: 20px 20px 20px 40px;
 }
 
 .col{
-    background-color: gray;
+    background-color: #660066;
     margin-top: 0;
     padding: 20px 20px 20px 40px;
 }
 
 .row{
-    background-color: gray;
+    background-color: #9999CC;
     margin-top: 0;
     padding: 20px 20px 20px 40px;
 }
 
 
 h1 a, h2 a {
-    color: gray;
+    color: #CCCCCC;
     font-family: 'Lobster';
 }
 
