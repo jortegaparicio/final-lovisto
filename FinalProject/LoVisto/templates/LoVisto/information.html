@@ -1,9 +1,12 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>All content</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
+    <link href="//fonts.googleapis.com/css?family=Lobster&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="{% static cssDir %}"></head>
 
 </head>
 <body>
@@ -20,8 +23,8 @@
     </div>
     {% if not request.user.is_authenticated %}
 
-        <div class="col">
-            <form action="/LoVisto/" method="POST">
+        <div class="col" id="login">
+            <form action="/LoVisto/" method="POST" class="list-group">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="login">
 
@@ -40,7 +43,7 @@
             </form>
         </div>
     {% else %}
-        <div class="col">
+        <div class="col" id="logout">
             <h3 align="right">
                 <form action="/LoVisto/" method="POST">
                     {% csrf_token %}
@@ -53,8 +56,7 @@
     </div>
 
 
-
-
+<div class="row" id="menu">
     <nav class="container-fluid  navbar navbar-expand-lg navbar-light bg-light">
           <h2>Menu</h2>
           <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -69,13 +71,10 @@
                 <a class="nav-link" href="/LoVisto/allcontent">Todo <span class="sr-only"></span></a>
               </tr>
               <tr class="nav-item">
-                <a class="nav-link" href="#">Fichero XML <span class="sr-only"></span> </a>
+                <a class="nav-link" href="/LoVisto/allcontent?format=xml">Fichero XML <span class="sr-only"></span> </a>
               </tr>
               <tr class="nav-item">
-                <a class="nav-link" href="#">Fichero JSON <span class="sr-only"></span> </a>
-              </tr>
-              <tr class="nav-item">
-                <a class="nav-link" href="#">Cambiar modo <span class="sr-only"></span> </a>
+                <a class="nav-link" href="/LoVisto/allcontent?format=json">Fichero JSON <span class="sr-only"></span> </a>
               </tr>
               {% if request.user.is_authenticated %}
                   <tr class="nav-item">
@@ -85,15 +84,17 @@
             </table>
           </div>
 
-            <!-- O si queremos incluir un logotipo y texto... -->
-        <nav class="navbar navbar-light bg-light">
-          <a class="navbar-brand" href="#">
-              {% load static %}
-            <img src="{% static "LoVisto/LoVistoLogo.png" %}"  width="30" height="30" class="d-inline-block align-top" alt="">
-            LoVisto
-          </a>
+      <tr class="nav-item">
 
-        </nav>
+          <form action="" method="POST">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="changeMode">
+              <button type="submit" class="nav-link">Cambiar modo<span class="sr-only"></span></button>
+
+          </form>
+
+
+      </tr>
     </nav>
 
 
@@ -101,7 +102,6 @@
 <br><p>Esta aplicación trata de una red social en la que podemos subir contenidos
   a modo de enlaces.
 </p>
-
  <footer class="bg-light text-center text-lg-start">
 
       <!-- Copyright -->
@@ -117,6 +117,7 @@
 
 
     </div>
+</div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
 </div>

@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,6 +6,8 @@
     <title>{{ content.title }}</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
+    <link href="//fonts.googleapis.com/css?family=Lobster&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="{% static cssDir %}"></head>
 
 </head>
 <body>
@@ -21,7 +24,7 @@
     </div>
     {% if not request.user.is_authenticated %}
 
-        <div class="col">
+        <div class="col" id="login">
             <form action="" method="POST">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="login">
@@ -41,7 +44,7 @@
             </form>
         </div>
     {% else %}
-        <div class="col">
+        <div class="col" id="logout">
             <h3 align="right">
                 <form action="" method="POST">
                     {% csrf_token %}
@@ -57,6 +60,7 @@
 
 
 
+<div class="row" id="menu">
 
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
   <h2>Menu</h2>
@@ -74,14 +78,11 @@
       <tr class="nav-item">
         <a class="nav-link" href="/LoVisto/allcontent">Todo <span class="sr-only"></span></a>
       </tr>
-      <tr class="nav-item">
-        <a class="nav-link" href="#">Fichero XML <span class="sr-only"></span> </a>
+     <tr class="nav-item">
+        <a class="nav-link" href="/LoVisto/allcontent?format=xml">Fichero XML <span class="sr-only"></span> </a>
       </tr>
       <tr class="nav-item">
-        <a class="nav-link" href="#">Fichero JSON <span class="sr-only"></span> </a>
-      </tr>
-      <tr class="nav-item">
-        <a class="nav-link" href="#">Cambiar modo <span class="sr-only"></span> </a>
+        <a class="nav-link" href="/LoVisto/allcontent?format=json">Fichero JSON <span class="sr-only"></span> </a>
       </tr>
         {% if request.user.is_authenticated %}
       <tr class="nav-item">
@@ -91,18 +92,21 @@
     </table>
   </div>
 
-        <!-- O si queremos incluir un logotipo y texto... -->
-<nav class="navbar navbar-light bg-light">
-  <a class="navbar-brand" href="#">
-      {% load static %}
-    <img src="{% static "LoVisto/LoVistoLogo.png" %}"  width="30" height="30" class="d-inline-block align-top" alt="">
-    LoVisto
-  </a>
+      <tr class="nav-item">
+
+          <form action="" method="POST">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="changeMode">
+              <button type="submit" class="nav-link">Cambiar modo<span class="sr-only"></span></button>
+
+          </form>
+
+
+      </tr>
 
 </nav>
-
-</nav>
-
+</div>
+<div class="row">
 
 <div class="list-group">
   <a href="" class="list-group-item list-group-item-action flex-column align-items-start active">
@@ -130,29 +134,32 @@
         {% endif %}
 
 </div>
+</div>
 
 
-
+<div class="row">
 
 {% if comment_list %}
     <h3>Comments:</h3>
     <div class="list-group">
         {% for comment in comment_list %}
-            <a class="list-group-item list-group-item-action flex-column align-items-start">
-                <div class="d-flex w-100 justify-content-between">
-                    <h5 class="mb-1">{{ comment.user.user_name }} : {{ comment.user.id }} </h5>
-                    <small class="text-muted">{{ comment.date }}</small>
-                </div>
-                <p class="mb-1">{{ comment.body }}</p>
-            </a>
+        <ul class="list-group">
+            <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">{{ comment.user.user_name }} : {{ comment.user.id }} </h5>
+                <small class="text-muted">{{ comment.date }}</small>
+            </div>
+            <p class="mb-1">{{ comment.body }}</p>
+        </ul>
         {% endfor %}
     </div>
 {% else %}
     <p>No comments now</p>
 {% endif %}
+</div>
+<div class="row">
 
 {% if request.user.is_authenticated %}
-    <p>
+    <ul class="list-group">
         <form class="form-horizontal" role="form" action="" method="POST">
             {% csrf_token %}
             <div class="form-group">
@@ -168,9 +175,10 @@
                 </div>
             </div>
         </form>
-    </p>
+    </ul>
 {% endif %}
-
+</div>
+<div class="row">
 
 <footer class="bg-light text-center text-lg-start">
 
@@ -187,7 +195,7 @@
 
 
 </div>
-
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
 

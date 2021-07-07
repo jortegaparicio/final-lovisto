@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<contents>
+    {% for content in content_list %}
+    <content>
+        <title>{{ content.title }}</title>
+        <link>{{ content.link }}</link>
+    </content>
+    {% endfor %}
+</contents>

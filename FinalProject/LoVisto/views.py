@@ -1,4 +1,4 @@
-from django.http import HttpResponse
+from django.http import JsonResponse, HttpResponse
 from .models import Content, User, Comment, Vote
 from django.template import loader
 from operator import attrgetter
@@ -11,11 +11,11 @@ from .aemet_parser import Aemet
 from .YTparser import Youtube
 from .redditParser import Reddit
 from . import data
+from django.shortcuts import render
 
 # Create your views here.
 NLASTOBJ = 10    # Number of the last objects that will be presented on the principal page
 NLASTAPORT = 5   # Number of the last aportations that will be presented on the principal page
-
 
 
 
@@ -228,8 +228,30 @@ def login_r(request):
             user = User(user_name=username, password=password)
             user.save()
 
+def chMode(request):
+    if request.user.is_authenticated:
+        user = User.objects.get(id=request.user.id)
+        print(user.mode)
+        cssDir = user.mode
+        if cssDir == 'css/LoVisto/dark.css':
+            user.mode = 'css/LoVisto/style.css'
+        else:
+            user.mode = 'css/LoVisto/dark.css'
+        user.save()
+
+
+def getMode(request):
+    if request.user.is_authenticated:
+        user = User.objects.get(id=request.user.id)
+        print(user.mode)
+        cssDir = user.mode
+    else:
+        cssDir = 'css/LoVisto/style.css'
+
+    return cssDir
 
 def index(request):
+
     if request.method == 'POST':
         if request.POST['action'] == 'vote':
             votation(request)
@@ -237,6 +259,8 @@ def index(request):
             logout(request)
         elif request.POST['action'] == 'login':
             login_r(request)
+        elif request.POST['action'] == 'changeMode':
+            chMode(request)
         else:
             user = User.objects.get(user_name=request.user.username)
             title = request.POST['title']
@@ -276,6 +300,9 @@ def index(request):
     print(one)
     print(two)
     print(three)
+
+    cssDir = getMode(request)
+
     # 2.- Cargar la plantilla
     template = loader.get_template('LoVisto/index.html')
 
@@ -286,7 +313,8 @@ def index(request):
         'content_user_list': content_user_list,
         'one': one,
         'two': two,
-        'three': three
+        'three': three,
+        'cssDir': cssDir
     }
     # 4.- Renderizar
     return HttpResponse(template.render(context, request))
@@ -302,6 +330,8 @@ def get_content(request, content_id):
             logout(request)
         elif request.POST['action'] == 'login':
             login_r(request)
+        elif request.POST['action'] == 'changeMode':
+            chMode(request)
         else:
             user = User.objects.get(user_name=request.user.username)
             content = Content.objects.get(id=content_id)
@@ -317,6 +347,8 @@ def get_content(request, content_id):
         content = Content.objects.get(id=content_id)
         comment_list = content.comment_set.all()
         sorted_comment_list = sorted(comment_list, key=attrgetter('date'), reverse=True)  # Ordenamos por id
+
+        cssDir = getMode(request)
 
         # 2.- Cargar la plantilla
         template = loader.get_template('LoVisto/content.html')
@@ -336,7 +368,8 @@ def get_content(request, content_id):
             'comment_list': sorted_comment_list,
             'one': one,
             'two': two,
-            'three': three
+            'three': three,
+            'cssDir': cssDir
         }
         response = template.render(context, request)
 
@@ -359,6 +392,9 @@ def user_view(request):
             logout(request)
         elif request.POST['action'] == 'login':
             login_r(request)
+        elif request.POST['action'] == 'changeMode':
+            chMode(request)
+
 
 
     if request.user.is_authenticated:
@@ -401,6 +437,8 @@ def user_view(request):
                 vote_user_list.append(i)
         print(vote_user_list)
 
+        cssDir = getMode(request)
+
         # 2.- Cargar la plantilla
         template = loader.get_template('LoVisto/user.html')
         # 3.- Ligar las variables de la plantilla a las variables de python
@@ -410,7 +448,8 @@ def user_view(request):
             'vote_list' : vote_user_list,
             'one': one,
             'two': two,
-            'three': three
+            'three': three,
+            'cssDir': cssDir
         }
     else:
         template = loader.get_template('LoVisto/user.html')
@@ -420,6 +459,35 @@ def user_view(request):
 
 
 def all_content(request):
+
+    if request.method == 'POST':
+        if request.POST['action'] == 'logout':
+            logout(request)
+        elif request.POST['action'] == 'login':
+            login_r(request)
+        elif request.POST['action'] == 'changeMode':
+            chMode(request)
+
+
+    if request.GET.get('format') == "xml":
+        content_list = Content.objects.all().order_by('date').reverse()
+        context = {"content_list": content_list}
+        response = render(request, 'LoVisto/file.xml', context=context, status=200)
+        response['Content-Type'] = 'application/xml'
+        return response
+
+
+    if request.GET.get('format') == "json":
+        content_list = Content.objects.all().order_by('date').reverse()
+        jsonFile = {}
+
+        for i in range(0, len(content_list), 1):
+            content = content_list[i]
+            info = {'title': content.title, 'link': content.link}
+            jsonFile['Contenido ' + str(i)] = info
+
+        return JsonResponse(jsonFile)
+
     # 1.- Obtenemos el contenido
     content_list = Content.objects.all()
     sorted_list = sorted(content_list, key=attrgetter('id'), reverse=True) # Ordenamos por id
@@ -430,6 +498,9 @@ def all_content(request):
         one = sorted_list[0]
         two = sorted_list[1]
         three = sorted_list[2]
+
+    cssDir = getMode(request)
+
     # 2.- Cargar la plantilla
     template = loader.get_template('LoVisto/allcontent.html')
     # 3.- Ligar las variables de la plantilla a las variables de python
@@ -437,13 +508,22 @@ def all_content(request):
         'content_list': sorted_list,
         'one': one,
         'two': two,
-        'three': three
+        'three': three,
+        'cssDir': cssDir
     }
     # Renderizar
     return HttpResponse(template.render(context, request))
 
 
 def information(request):
+    if request.method == 'POST':
+        if request.POST['action'] == 'logout':
+            logout(request)
+        elif request.POST['action'] == 'login':
+            login_r(request)
+        elif request.POST['action'] == 'changeMode':
+            chMode(request)
+
     content_list = Content.objects.all()
     sorted_list = sorted(content_list, key=attrgetter('id'), reverse=True) # Ordenamos por id
     one = None
@@ -453,15 +533,24 @@ def information(request):
         one = sorted_list[0]
         two = sorted_list[1]
         three = sorted_list[2]
+
+    cssDir = getMode(request)
+
     template = loader.get_template('LoVisto/information.html')
     # 3.- Ligar las variables de la plantilla a las variables de python
     context = {
         'one': one,
         'two': two,
-        'three': three
+        'three': three,
+        'cssDir': cssDir
     }
     # Renderizar
     return HttpResponse(template.render(context, request))
+
+
+def json_view(request):
+    return None
+
 
 def loged_in(request):
     if request.user.is_authenticated:

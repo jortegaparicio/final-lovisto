@@ -9,6 +9,7 @@ from django.contrib.auth.models import User
 class User(models.Model):
     user_name = models.CharField(max_length=128, default='')
     password = models.CharField(max_length=128, default='')
+    mode = models.CharField(max_length=128, default='css/LoVisto/style.css')
 
 
     def __str__(self):
