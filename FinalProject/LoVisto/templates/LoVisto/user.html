@@ -106,7 +106,7 @@
                     <h2>Comment list:</h2>
                       <ul class="list-group">
                         {% for content in comment_list %}
-                            <li class="list-group-item" class="resumida" style="background-color: rgba(0, 0, 0, 0.2);">{{ content.body }} : <a href="{{ content.id }}">{{ content.content.title }}</a></p></li>
+                            <li class="list-group-item" class="resumida" style="background-color: rgba(0, 0, 0, 0.2);">{{ content.body }} : <a href="{{ content.content.id }}">{{ content.content.title }}</a></p></li>
                         {% endfor %}
                       </ul>
                   </div>
