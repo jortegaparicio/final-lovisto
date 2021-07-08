@@ -58,7 +58,7 @@ class PostTests(TestCase):
     def test_logout(self):
         logout = 'logout'
         c = Client()
-        response = c.post('/LoVisto/', {'action': logout})
+        response = c.post('/LoVisto/allcontent', {'action': logout})
         self.assertEqual(response.status_code, 200)
         response = c.get('/LoVisto/')
         self.assertEqual(response.status_code, 200)
@@ -68,7 +68,31 @@ class PostTests(TestCase):
     def test_changeMode(self):
         action = 'changeMode'
         c = Client()
-        response = c.post('/LoVisto/', {'action': action})
+        response = c.post('/LoVisto/1', {'action': action})
+        self.assertEqual(response.status_code, 200)
+        response = c.get('/LoVisto/')
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode('utf-8')
+        self.assertIn('<h2>Menú</h2>', content)
+
+
+    def test_login2(self):
+        user_name = 'usuario'
+        password = 'user'
+        login = 'login'
+        c = Client()
+        response = c.post('/LoVisto/information', {'action': login,'username': user_name, 'password': password})
+        self.assertEqual(response.status_code, 200)
+        response = c.get('/LoVisto/')
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode('utf-8')
+        self.assertIn('<h2>Menú</h2>', content)
+
+
+    def test_changeMode2(self):
+        action = 'changeMode'
+        c = Client()
+        response = c.post('/LoVisto/user', {'action': action})
         self.assertEqual(response.status_code, 200)
         response = c.get('/LoVisto/')
         self.assertEqual(response.status_code, 200)

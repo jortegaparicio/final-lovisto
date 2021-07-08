@@ -269,18 +269,20 @@ def index(request):
 
     # 1.- Lista de contenidos
     content = Content.objects.all()
+    content_list = []
+    content_user_list = []
 
     # Lista de las últimas aportaciones del usuario
-    user_list = []
-    content_user_list = []
-    for i in content:   # Ponemos en la respuesta los últimos objetos añadidos
-        if i.user.user_name == request.user.username:
-            user_list.append(i)
-    for i in user_list[:NLASTAPORT]:
-        content_user_list.append(i)
+    if request.user.is_authenticated:
+        user_list = []
+
+        for i in content:   # Ponemos en la respuesta los últimos objetos añadidos
+            if i.user.user_name == request.user.username:
+                user_list.append(i)
+        for i in user_list[:NLASTAPORT]:
+            content_user_list.append(i)
 
     # Lista de las ultimas aportaciones de todos los usuarios
-    content_list = []
     sorted_list = sorted(content, key=attrgetter('id'), reverse=True) # Ordenamos por id
     for i in sorted_list[:NLASTOBJ]:   # Ponemos en la respuesta los últimos objetos añadidos
         content_list.append(i)
