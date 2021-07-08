@@ -18,7 +18,7 @@
     <div class="col">
         <div id="image">
             {% load static %}
-            <img src="{% static "img/banner.png" %}" class="float-left" alt="Logo de LoVisto" width="300" height="241">
+            <img src="{% static '/img/banner.png' %}" class="float-left" alt="Logo de LoVisto" width="300" height="241">
         </div>
     </div>
     {% if not request.user.is_authenticated %}
